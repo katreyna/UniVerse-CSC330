@@ -16,7 +16,9 @@ const server = http.createServer((req, res) => {
     "/": "index.html",
     "/index": "index.html",
     "/signup": "sign-up.html",
+    "/login": "login.html"
     "/home": "home.html"
+
   };
 
   let fileName = fileMap[urlPath] || urlPath.substring(1); // remove leading / if not mapped
