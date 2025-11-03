@@ -1,3 +1,4 @@
+      
       html {
         background-color: #f2f4f7;
 
@@ -16,7 +17,6 @@
       .login {
         background-color: #dcdee0;
         border: none;
-	color: black;
 
         
       }
@@ -71,15 +71,15 @@
         	margin-left: 10vw;
         	width: 20%;
                 border-radius: 30px;
-       } 
+        
+      }
+      
       a {
         color: white;
         text-decoration: none;
-       }
-
-/* css for sign up */
-
-     .heading {
+      }
+      
+      .heading {
         display: flex;
         justify-content: center;
         align-content: center;
@@ -99,22 +99,24 @@
       
       input {
        	text-decoration: none;
-        border-radius: 10px;
+        border-radius: 20px;
         border: none;
         font-size: 15px;
         margin-top: 20px;
-        margin-bottom: 20px;
+        margin-bottom: 50px;
         width: 25vw;
         font-family: Poppins;
+        padding: 10px;
       }
       
       .forms {
         text-align: center;
-        margin-top: 50px;
+        padding: 10px;
+        border-radius: 50px;
+      
       }
       
       #register {
-       margin-top: 50px;
        margin-left: 22vw;
       }
       
