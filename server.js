@@ -17,7 +17,6 @@ const server = http.createServer((req, res) => {
     "/index": "index.html",
     "/signup": "sign-up.html",
     "/login": "login.html"
-    "/home": "home.html"
 
   };
 

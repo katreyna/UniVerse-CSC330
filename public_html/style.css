@@ -1,4 +1,4 @@
-      html {
+html {
         background-color: #f2f4f7;
 
       }
@@ -28,7 +28,7 @@
       }
       
       .sign-up, .login {
-	border-radius: 10px;
+				border-radius: 10px;
         margin-right: 5px;
         
       }
@@ -49,25 +49,27 @@
       
       
       #title {
+        
         font-size: 60px;
         display: flex;
         justify-content: left;
         margin-left: 10vw;
-	margin-top: 30vh;
+				margin-top: 30vh;
       }
       
       #description {
-        font-size: 20px;
-       	display: flex;
-        justify-content: left;
-        margin-left: 10vw;
+        	font-size: 20px;
+       		display: flex;
+        	justify-content: left;
+        	margin-left: 10vw;
+
       }
       
       #join {
-        font-size: 20px;
-        margin-left: 10vw;
-        width: 20%;
-        border-radius: 30px;
+        	font-size: 20px;
+        	margin-left: 10vw;
+        	width: 20%;
+                border-radius: 30px;
         
       }
       
@@ -75,6 +77,8 @@
         color: white;
         text-decoration: none;
       }
+      
+      /* register css */
       
       .heading {
         display: flex;
@@ -84,7 +88,7 @@
       }
       
       .container {
-    	width: 50vw;
+    		width: 50vw;
         margin-left: 20vw;
         padding: 25px;
         border-radius: 20px;
@@ -107,11 +111,10 @@
         padding: 10px;
         background: rgba(0, 114, 213, 0);
         border-radius: 50px;
-        backdrop-filter: blur(500px); 
-	-webkit-backdrop-filter: blur(500px);
-	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.3);
-      
+        backdrop-filter: blur(500px); effect 
+  	-webkit-backdrop-filter: blur(500px); 
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
+  	border: 1px solid rgba(255, 255, 255, 0.3); 
       }
       
       #register {
@@ -124,10 +127,39 @@
         margin-top: 50px;
       }
       
-      #login-link {
-	color: #0072d5;
-        display: flex;
-        justify-content: center;
+      .login-link {
+       color: #0072d5;
+       display: flex;
+       justify-content: center;
       }
     
-    
+      /* login css */
+      
+      
+      #forgot-password {
+        display: flex;
+        justify-content: right;
+    		margin-left: 200px;
+      }
+     
+  	.options {
+  	display: flex;
+  	justify-content: center;
+  	align-items: center;
+  	margin: 10px 0;
+  	padding: 0 5px;
+ 	font-size: 14px;
+	}
+
+	.options label {
+  	display: flex;
+  	align-items: center;
+  	
+}
+
+	.options input[type="checkbox"] {
+  	margin: 0; 
+  	width: 16px;
+  	height: 16px;
+    	margin-right: 20px;
+}
