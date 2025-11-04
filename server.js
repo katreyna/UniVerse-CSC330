@@ -45,7 +45,7 @@ if (req.method === "POST" && req.url === "/register") { //not /signup, /register
 
 			} else {
 				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ message: "User registration complete!" }));
+				res.end(JSON.stringify({ success: true,  message: "User registration complete!" }));
 			}
 		}
 		);
