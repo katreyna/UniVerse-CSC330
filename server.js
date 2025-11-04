@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt"); // encryption
 
 
 
-const PORT = 8080; 
+const PORT = 80; 
 const directory  = path.join(__dirname, "public_html");
 
 const connection_pool = mysql.createPool({
