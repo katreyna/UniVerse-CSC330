@@ -71,16 +71,16 @@ if (req.method === "POST" && req.url === "/login") {
 		async (err, results) => {
 			if (err || results.length === 0) {
 				res.writeHead(400);
-				return res.end("Invalid email or password");
+				return res.end(JSON.stringify({ success: false, message: "Invalid email or password" }));
 			}
 			const user = results[0];
 			const match = await bcrypt.compare(password, user.password);
 			if (match) {
 				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ message: "Welcome back!" }));
+				res.end(JSON.stringify({ success: true,  message: "Welcome back!" }));
 			} else {
 				res.writeHead(401);
-				res.end("Wrong password");
+				res.end(JSON.stringify({ success: false, message: "Wrong Password!" }));
 			}
 		}
 	);
@@ -98,8 +98,8 @@ if (req.method === "POST" && req.url === "/login") {
     "/": "index.html",
     "/index": "index.html",
     "/signup": "sign-up.html",
-    "/login": "login.html"
-
+    "/login": "login.html",
+    "/home" : "feed.html"
   };
 
 

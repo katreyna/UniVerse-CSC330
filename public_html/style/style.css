@@ -117,8 +117,13 @@
   			border: 1px solid rgba(255, 255, 255, 0.3); 
       }
       
+<<<<<<< HEAD
       #register {
  				margin-bottom: 20px; 
+=======
+      #login {
+ 	margin-bottom: 20px; 
+>>>>>>> d0e8ddb (added rerouting after logging in/registering)
       }
       
       #login-reminder {
