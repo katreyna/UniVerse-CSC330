@@ -99,7 +99,8 @@ if (req.method === "POST" && req.url === "/login") {
     "/index": "index.html",
     "/signup": "sign-up.html",
     "/login": "login.html",
-    "/home" : "feed.html"
+    "/home" : "feed.html",
+    "/events" : "events.html"
   };
 
 
