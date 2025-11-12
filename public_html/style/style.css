@@ -94,7 +94,7 @@
         border-radius: 20px;
       }
       
-      input {
+      .form-input {
        	text-decoration: none;
         border-radius: 20px;
         border: none;
@@ -111,20 +111,18 @@
         padding: 10px;
         background: rgba(0, 114, 213, 0);
         border-radius: 50px;
-        backdrop-filter: blur(500px); effect 
-  			-webkit-backdrop-filter: blur(500px); 
-  			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
-  			border: 1px solid rgba(255, 255, 255, 0.3); 
+        backdrop-filter: blur(5px); effect 
+  		-webkit-backdrop-filter: blur(5px); 
+  		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
+  		border: 1px solid rgba(255, 255, 255, 0.3); 
       }
       
 <<<<<<< HEAD
-      #register {
- 				margin-bottom: 20px; 
+      .login-button, .register.button {
+		margin-bottom: 20px; 
+	  }
 =======
-      #login {
- 	margin-bottom: 20px; 
 >>>>>>> d0e8ddb (added rerouting after logging in/registering)
-      }
       
       #login-reminder {
         display: flex;
