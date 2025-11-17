@@ -145,6 +145,13 @@ app.get("/api/events", async (req, res) => {
        ORDER BY e.event_time ASC`,
       { timeout: 3000 }
     );
+    
+    // Use mock data if database is empty
+    if (events.length === 0) {
+      console.log("⚠️ Database empty, using mock data for demo");
+      return res.json(mockEvents);
+    }
+    
     console.log("✅ Database events loaded:", events.length);
     res.json(events);
   } catch (error) {
