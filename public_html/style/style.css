@@ -1,4 +1,4 @@
-    html {
+html {
         background-color: #f2f4f7;
 
       }
@@ -112,18 +112,15 @@
         padding: 10px;
         background: rgba(0, 114, 213, 0);
         border-radius: 50px;
-        backdrop-filter: blur(5px); effect 
+        backdrop-filter: blur(5px); 
   		-webkit-backdrop-filter: blur(5px); 
   		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
   		border: 1px solid rgba(255, 255, 255, 0.3); 
       }
       
-<<<<<<< HEAD
       .login-button, .register.button {
 		margin-bottom: 20px; 
 	  }
-=======
->>>>>>> d0e8ddb (added rerouting after logging in/registering)
       
       #login-reminder {
         display: flex;
@@ -306,4 +303,79 @@
   .card h2 {
     font-size: 1.25rem;
   }
+}
+
+
+/* Event Footer with RSVP */
+.event-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.rsvp-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.rsvp-count i {
+  margin-right: 5px;
+  color: #2196F3;
+}
+
+.rsvp-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.rsvp-btn:hover:not(:disabled) {
+  background: #1976D2;
+  transform: scale(1.05);
+}
+
+.rsvp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rsvp-btn.rsvped {
+  background: #4CAF50;
+}
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification-success {
+  border-left: 4px solid #4CAF50;
+}
+
+.notification-error {
+  border-left: 4px solid #f44336;
 }
