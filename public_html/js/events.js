@@ -263,6 +263,8 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+document.addEventListener("DOMContentLoaded", loadEvents);
+
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", async () => {
   await checkLoginStatus();
