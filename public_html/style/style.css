@@ -45,6 +45,7 @@
         float: right;
         margin-right: 20px;
         margin-top: 20px;
+		font-family: Poppins;
       }
       
       
@@ -54,7 +55,7 @@
         display: flex;
         justify-content: left;
         margin-left: 10vw;
-				margin-top: 30vh;
+		margin-top: 30vh;
       }
       
       #description {
@@ -69,7 +70,7 @@
         	font-size: 20px;
         	margin-left: 10vw;
         	width: 20%;
-                border-radius: 30px;
+            border-radius: 30px;
         
       }
       
@@ -88,13 +89,13 @@
       }
       
       .container-signup {
-    		width: 50vw;
+    	width: 50vw;
         margin-left: 20vw;
         padding: 25px;
         border-radius: 20px;
       }
       
-      input {
+      .form-input {
        	text-decoration: none;
         border-radius: 20px;
         border: none;
@@ -111,20 +112,16 @@
         padding: 10px;
         background: rgba(0, 114, 213, 0);
         border-radius: 50px;
-        backdrop-filter: blur(500px); effect 
-  			-webkit-backdrop-filter: blur(500px); 
-  			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
-  			border: 1px solid rgba(255, 255, 255, 0.3); 
+        backdrop-filter: blur(5px); 
+  		-webkit-backdrop-filter: blur(5px); 
+  		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
+  		border: 1px solid rgba(255, 255, 255, 0.3); 
       }
       
-<<<<<<< HEAD
-      #register {
- 				margin-bottom: 20px; 
-=======
-      #login {
- 	margin-bottom: 20px; 
->>>>>>> d0e8ddb (added rerouting after logging in/registering)
-      }
+      .login-button, .register.button {
+		margin-bottom: 20px; 
+		background-color: #0072d5;
+	  }
       
       #login-reminder {
         display: flex;
@@ -193,21 +190,36 @@
 /* Navigation link buttons */
 .nav-link {
   background: transparent;
-  border: none;
   padding: 8px 12px;
   cursor: pointer;
   transition: background 0.3s ease;
   border-radius: 5px;
+  color: #0072d5;
+  border-color: #0072d5;
+  border: solid;
+  margin-right: 10px;
+  margin-top: 10px;
 }
 
 .nav-link:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background-color: #0072d5;
+  color: white;
+  border-color: #0072d5;
 }
 
 .nav-link a {
   text-decoration: none;
-  color: #333;
   font-weight: 500;
+  padding: 10px;
+
+}
+
+#profile-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    
 }
 
 /* Card List */
@@ -378,4 +390,260 @@
   .card h2 {
     font-size: 1.25rem;
   }
+}
+
+
+/* Event Footer with RSVP */
+.event-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.rsvp-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.rsvp-count i {
+  margin-right: 5px;
+  color: #2196F3;
+}
+
+.rsvp-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.rsvp-btn:hover:not(:disabled) {
+  background: #1976D2;
+  transform: scale(1.05);
+}
+
+.rsvp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rsvp-btn.rsvped {
+  background: #4CAF50;
+}
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification-success {
+  border-left: 4px solid #4CAF50;
+}
+
+.notification-error {
+  border-left: 4px solid #f44336;
+}
+
+/* profile css starts */
+
+.profile-wrapper {
+  max-width: 800px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.profile-header {
+  display: flex;
+  padding: 30px;
+  max-width: 900px;
+  margin: 0 auto;
+  align-items: center;
+  gap: 40px;
+}
+
+.profile-left {
+  flex: 1;
+}
+
+.profile-right {
+  flex: 2;
+}
+
+.pfp-large {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0072d5;
+}
+
+.profile-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+#edit-profile-button {
+  padding: 8px 20px;
+  border: 1px solid #0072d5;;
+background-color: #0072d5;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  color: white;
+  font-family: Poppins;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 20px;
+  margin: 10px 0;
+}
+
+.profile-stats span {
+  font-weight: 500;
+}
+
+#bio {
+  margin-top: 10px;
+}
+
+/* followers/following lists - kat */ 
+.followers-section {
+  max-width: 900px;
+  margin: 20px auto;
+}
+
+#followers-list, #following-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+#followers-list li, #following-list li {
+  background: #f2f4f7;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+#followers-list li:hover, #following-list li:hover {
+  background: #e0e5eb;
+}
+
+.small-pfp {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+/* modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-content input, .modal-content textarea {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.modal-content button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #0072d5;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.close {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* tabs */
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0 20px 0;
+}
+
+.tab-button {
+  background: #f2f4f7;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  background: #0072d5;
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
