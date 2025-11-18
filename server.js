@@ -24,7 +24,7 @@ app.use(session({
 const connection_pool = mysql.createPool({
   host: '34.26.44.205',
   user: 'node',
-  password: 'Node1234!',
+  password: 'Node123!',
   database: 'UniVerse',
   waitForConnections: true,
   connectionLimit: 10
@@ -187,8 +187,6 @@ app.get("/api/events/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch event" });
   }
 });
-
-// ==================== RSVP ROUTES (YOUR FEATURE!) ====================
 
 // RSVP to an event
 app.post("/api/events/:id/rsvp", async (req, res) => {
