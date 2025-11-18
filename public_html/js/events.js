@@ -73,3 +73,4 @@ function escapeHtml(text) {
 }
 
 document.addEventListener("DOMContentLoaded", loadEvents);
+
