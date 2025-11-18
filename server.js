@@ -317,6 +317,17 @@ app.get("/events", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "events.html"));
 });
 
+// get profile
+
+app.get("/profile", (req, res) => {
+  // user must be logged in to see profile page
+  if (!req.session.userId) {
+    return res.redirect("/login");
+  }
+
+  res.sendFile(path.join(__dirname, "public_html", "profile.html"));
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).send("404 Not Found");
