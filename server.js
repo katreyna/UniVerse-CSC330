@@ -35,6 +35,30 @@ const promisePool = connection_pool.promise();
 
 // user authentication routes
 
+
+//load profile
+app.get("/api/profile", async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
+  try {
+    const [rows] = await promisePool.query(
+      "SELECT username, email, bio, profile_pic FROM users WHERE id = ?",
+      [req.session.userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Profile error:", error);
+    res.status(500).json({ error: "Failed to load profile" });
+  }
+});
+
 // register endpoint
 app.post("/register", async (req, res) => {
   try {
@@ -320,11 +344,6 @@ app.get("/events", (req, res) => {
 // get profile
 
 app.get("/profile", (req, res) => {
-  // user must be logged in to see profile page
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
-
   res.sendFile(path.join(__dirname, "public_html", "profile.html"));
 });
 
