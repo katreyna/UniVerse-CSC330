@@ -35,6 +35,27 @@ async function loadEvents() {
       return;
     }
     
+    // Try to load detailed info for each event (to check RSVP status)
+    // But don't fail if this doesn't work
+    if (currentUser) {
+      for (const event of events) {
+        try {
+          const detailResponse = await fetch(`/api/events/${event.id}`);
+          if (detailResponse.ok) {
+            const detailedEvent = await detailResponse.json();
+            event.user_rsvped = detailedEvent.user_rsvped;
+          } else {
+            // If detail fetch fails, assume not RSVP'd
+            event.user_rsvped = false;
+          }
+        } catch (err) {
+          console.warn('Could not load RSVP status for event:', event.id);
+          event.user_rsvped = false;
+        }
+      }
+    }
+    
+    // Render events even if detail fetching failed
     events.forEach(event => {
       const card = createEventCard(event);
       container.appendChild(card);
@@ -65,6 +86,19 @@ function createEventCard(event) {
   const rsvpCount = event.rsvp_count || 0;
   const rsvpText = rsvpCount === 1 ? '1 person going' : `${rsvpCount} people going`;
   
+  // Determine button state based on login and RSVP status
+  let buttonText = 'Login to RSVP';
+  let buttonClass = 'rsvp-btn';
+  
+  if (currentUser) {
+    if (event.user_rsvped) {
+      buttonText = '✓ RSVP\'d';
+      buttonClass = 'rsvp-btn rsvped';
+    } else {
+      buttonText = 'RSVP';
+    }
+  }
+  
   card.innerHTML = `
     <div class="card-badge event">Event</div>
     <h2>${escapeHtml(event.title)}</h2>
@@ -77,8 +111,8 @@ function createEventCard(event) {
       <span class="rsvp-count">
         <i class="fa fa-users"></i> ${rsvpText}
       </span>
-      <button class="rsvp-btn" data-event-id="${event.id}">
-        ${currentUser ? 'RSVP' : 'Login to RSVP'}
+      <button class="${buttonClass}" data-event-id="${event.id}" data-rsvped="${event.user_rsvped ? 'true' : 'false'}">
+        ${buttonText}
       </button>
     </div>
   `;
@@ -95,6 +129,17 @@ async function handleRSVP(eventId, button) {
   if (!currentUser) {
     alert('Please log in to RSVP to events');
     window.location.href = '/login';
+    return;
+  }
+  
+  const isRsvped = button.dataset.rsvped === 'true';
+  
+  // If already RSVP'd, cancel the RSVP
+  if (isRsvped) {
+    if (!confirm('Do you want to cancel your RSVP?')) {
+      return;
+    }
+    await cancelRSVP(eventId, button);
     return;
   }
   
@@ -117,7 +162,8 @@ async function handleRSVP(eventId, button) {
       // Update button
       button.textContent = '✓ RSVP\'d';
       button.classList.add('rsvped');
-      button.disabled = true;
+      button.dataset.rsvped = 'true';
+      button.disabled = false;
       
       // Update count
       const countElement = button.parentElement.querySelector('.rsvp-count');
@@ -135,6 +181,49 @@ async function handleRSVP(eventId, button) {
   } catch (error) {
     console.error('RSVP error:', error);
     alert('Failed to RSVP. Please try again.');
+    button.textContent = originalText;
+    button.disabled = false;
+  }
+}
+
+async function cancelRSVP(eventId, button) {
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Canceling...';
+  
+  try {
+    const response = await fetch(`/api/events/${eventId}/rsvp`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update button
+      button.textContent = 'RSVP';
+      button.classList.remove('rsvped');
+      button.dataset.rsvped = 'false';
+      button.disabled = false;
+      
+      // Update count
+      const countElement = button.parentElement.querySelector('.rsvp-count');
+      const count = data.rsvp_count;
+      const countText = count === 1 ? '1 person going' : `${count} people going`;
+      countElement.innerHTML = `<i class="fa fa-users"></i> ${countText}`;
+      
+      // Show success message
+      showNotification('RSVP cancelled', 'info');
+    } else {
+      alert(data.message || 'Failed to cancel RSVP');
+      button.textContent = originalText;
+      button.disabled = false;
+    }
+  } catch (error) {
+    console.error('Cancel RSVP error:', error);
+    alert('Failed to cancel RSVP. Please try again.');
     button.textContent = originalText;
     button.disabled = false;
   }
