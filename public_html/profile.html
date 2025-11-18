@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile</title>
+    <link rel="stylesheet" href="/style/style.css">
+        <link rel="stylesheet" href="style/style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+
+<nav id="profile-nav">
+    <a class="nav-link" href="/home">Home</a>
+    <a class="nav-link" href="/logout">Logout</a>
+</nav>
+
+<section class="profile-header">
+  <div class="profile-left">
+    <img id="profile-pic" class="pfp-large" src="/uploads/default.png">
+  </div>
+  <div class="profile-right">
+    <div class="profile-top">
+      <h2 id="username">Username</h2>
+      <button id="edit-profile-button">Edit Profile</button>
+    </div>
+    <div class="profile-stats">
+      <span id="posts-count">0 posts</span>
+      <span id="followers-count">0 followers</span>
+      <span id="following-count">0 following</span>
+    </div>
+    <p id="bio"></p>
+  </div>
+</section>
+
+<div class="profile-tabs">
+  <button class="tab-button active" data-tab="posts-tab">Posts</button>
+  <button class="tab-button" data-tab="events-tab">Events</button>
+</div>
+
+<div id="posts-tab" class="tab-content active">
+  <div class="card-list" id="posts-list">
+    <div class="card">
+      <div class="card-badge">Post</div>
+      <h2>My First Post</h2>
+      <div class="card-description">This is a sample post description.</div>
+    </div>
+  </div>
+</div>
+
+<div id="events-tab" class="tab-content">
+  <div class="card-list" id="events-list">
+    <div class="card">
+      <div class="card-badge event">Event</div>
+      <h2>Community Meetup</h2>
+      <div class="card-meta">
+        <i class="fa fa-calendar"></i> Nov 20, 2025 <br>
+        <i class="fa fa-map-marker"></i> Central Park
+      </div>
+      <div class="card-description">
+        Join us for a fun community meetup with games and networking.
+      </div>
+      <div class="event-footer">
+        <span class="rsvp-count"><i class="fa fa-users"></i> 15 going</span>
+        <button class="rsvp-btn">RSVP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- edit profile popup -->
+<div id="edit-profile-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <button class="edit-profile">Edit Profile</button>
+    <input type="text" id="edit-username" placeholder="Username">
+    <textarea id="edit-bio" placeholder="Bio"></textarea>
+    <input type="file" id="edit-pic" accept="image/*">
+    <button id="save-changes">Save Changes</button>
+  </div>
+</div>
+</body>
+</html>
