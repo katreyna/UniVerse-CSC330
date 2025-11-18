@@ -3,9 +3,16 @@ const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const path = require("path");
 const session = require("express-session");
+const cors = require("cors");
 
 const app = express();
 const PORT = 80;
+
+// CORS configuration for credentials
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 
 // middleware
 app.use(express.json());
