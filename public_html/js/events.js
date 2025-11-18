@@ -4,10 +4,15 @@ let currentUser = null;
 // Check if user is logged in when page loads
 async function checkLoginStatus() {
   try {
-    const response = await fetch('/api/session');
+    const response = await fetch('/api/session', {
+      credentials: 'include'
+    });
     const data = await response.json();
     if (data.loggedIn) {
       currentUser = data.user;
+      console.log('User logged in:', currentUser);
+    } else {
+      console.log('No user logged in');
     }
   } catch (error) {
     console.error('Error checking login status:', error);
@@ -20,7 +25,9 @@ async function loadEvents() {
   container.innerHTML = '<p class="loading">Loading events...</p>';
   
   try {
-    const response = await fetch('/api/events');
+    const response = await fetch('/api/events', {
+      credentials: 'include'
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch events');
@@ -40,7 +47,9 @@ async function loadEvents() {
     if (currentUser) {
       for (const event of events) {
         try {
-          const detailResponse = await fetch(`/api/events/${event.id}`);
+          const detailResponse = await fetch(`/api/events/${event.id}`, {
+            credentials: 'include'
+          });
           if (detailResponse.ok) {
             const detailedEvent = await detailResponse.json();
             event.user_rsvped = detailedEvent.user_rsvped;
@@ -153,7 +162,8 @@ async function handleRSVP(eventId, button) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'include'
     });
     
     const data = await response.json();
@@ -196,7 +206,8 @@ async function cancelRSVP(eventId, button) {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'include'
     });
     
     const data = await response.json();
