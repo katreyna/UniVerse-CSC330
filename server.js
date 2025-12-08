@@ -8,18 +8,15 @@ const cors = require("cors");
 const app = express();
 const PORT = 80;
 
-// CORS configuration for credentials
 app.use(cors({
   origin: true,
   credentials: true
 }));
 
-// middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public_html")));
 
-// session middleware (for user authentication)
 app.use(session({
   secret: 'universe-secret-key',
   resave: false,
@@ -27,7 +24,6 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-// database connection pool
 const connection_pool = mysql.createPool({
   host: '34.26.44.205',
   user: 'node',
@@ -37,13 +33,11 @@ const connection_pool = mysql.createPool({
   connectionLimit: 10
 });
 
-// convert pool to use promises
 const promisePool = connection_pool.promise();
 
-// user authentication routes
-
-
-//load profile
+/* ======================================================
+                        profile
+====================================================== */
 app.get("/api/profile", async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: "Not logged in" });
@@ -51,7 +45,7 @@ app.get("/api/profile", async (req, res) => {
 
   try {
     const [rows] = await promisePool.query(
-      "SELECT username, email, bio, profile_pic FROM users WHERE id = ?",
+      "SELECT username, email, bio, profile_pic FROM users WHERE userID = ?",
       [req.session.userId]
     );
 
@@ -66,7 +60,9 @@ app.get("/api/profile", async (req, res) => {
   }
 });
 
-// register endpoint
+/* ======================================================
+                        register
+====================================================== */
 app.post("/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -89,7 +85,9 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// login endpoint
+/* ======================================================
+                        login
+====================================================== */
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -107,9 +105,14 @@ app.post("/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     
     if (match) {
-      req.session.userId = user.id;
+      req.session.userId = user.userID;   // FIXED
       req.session.username = user.username;
-      res.json({ success: true, message: "Welcome back!", user: { id: user.id, username: user.username } });
+
+      res.json({
+        success: true,
+        message: "Welcome back!",
+        user: { id: user.userID, username: user.username } // FIXED
+      });
     } else {
       res.status(401).json({ success: false, message: "Wrong Password!" });
     }
@@ -119,26 +122,34 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// logout endpoint
+/* ======================================================
+                        logout
+====================================================== */
 app.post("/logout", (req, res) => {
   req.session.destroy();
   res.json({ success: true, message: "Logged out successfully" });
 });
 
-// check if user is logged in
+/* ======================================================
+                    check session
+====================================================== */
 app.get("/api/session", (req, res) => {
   if (req.session.userId) {
-    res.json({ loggedIn: true, user: { id: req.session.userId, username: req.session.username } });
+    res.json({
+      loggedIn: true,
+      user: { id: req.session.userId, username: req.session.username }
+    });
   } else {
     res.json({ loggedIn: false });
   }
 });
 
-// ==================== EVENTS API ROUTES ====================
+/* ======================================================
+                        events
+====================================================== */
 
-// get all events
+// Get all events
 app.get("/api/events", async (req, res) => {
-  // Mock data for demo/testing
   const mockEvents = [
     {
       id: 1,
@@ -146,22 +157,6 @@ app.get("/api/events", async (req, res) => {
       event_time: "2025-11-20T19:00:00",
       location: "Moore Field",
       description: "Come cheer on the teams! Free admission for students.",
-      rsvp_count: 0
-    },
-    {
-      id: 2,
-      title: "Career Fair",
-      event_time: "2025-11-25T10:00:00",
-      location: "Student Center",
-      description: "Tech, finance, and healthcare companies recruiting.",
-      rsvp_count: 0
-    },
-    {
-      id: 3,
-      title: "Fall Concert",
-      event_time: "2025-11-28T20:00:00",
-      location: "University Auditorium",
-      description: "Featuring local bands and student performers!",
       rsvp_count: 0
     }
   ];
@@ -173,25 +168,18 @@ app.get("/api/events", async (req, res) => {
        FROM events e
        LEFT JOIN rsvps r ON e.eventID = r.event_id
        GROUP BY e.eventID, e.title, e.event_time, e.location, e.description
-       ORDER BY e.event_time ASC`,
-      { timeout: 3000 }
+       ORDER BY e.event_time ASC`
     );
-    
-    // Use mock data if database is empty
-    if (events.length === 0) {
-      console.log("⚠️ Database empty, using mock data for demo");
-      return res.json(mockEvents);
-    }
-    
-    console.log("✅ Database events loaded:", events.length);
+
+    if (events.length === 0) return res.json(mockEvents);
+
     res.json(events);
   } catch (error) {
-    console.log("⚠️ Database unavailable, using mock data for demo");
     res.json(mockEvents);
   }
 });
 
-// get single event with RSVP status
+// Get single event
 app.get("/api/events/:id", async (req, res) => {
   try {
     const eventId = req.params.id;
@@ -200,14 +188,14 @@ app.get("/api/events/:id", async (req, res) => {
     const [events] = await promisePool.query(
       `SELECT e.eventID as id, e.title, e.event_time, e.location, e.description,
         COUNT(r.id) as rsvp_count,
-        ${userId ? `MAX(CASE WHEN r.user_id = ? THEN 1 ELSE 0 END) as user_rsvped` : '0 as user_rsvped'}
+        ${userId ? `MAX(CASE WHEN r.user_id = ? THEN 1 ELSE 0 END)` : '0'} as user_rsvped
        FROM events e
        LEFT JOIN rsvps r ON e.eventID = r.event_id
        WHERE e.eventID = ?
        GROUP BY e.eventID, e.title, e.event_time, e.location, e.description`,
       userId ? [userId, eventId] : [eventId]
     );
-    
+
     if (events.length === 0) {
       return res.status(404).json({ error: "Event not found" });
     }
@@ -219,106 +207,92 @@ app.get("/api/events/:id", async (req, res) => {
   }
 });
 
-// RSVP to an event
+// RSVP
 app.post("/api/events/:id/rsvp", async (req, res) => {
   try {
     const eventId = req.params.id;
     const userId = req.session.userId;
-    
-    // check if user is logged in
+
     if (!userId) {
       return res.status(401).json({ success: false, message: "You must be logged in to RSVP" });
     }
-    
-    // check if event exists
+
     const [events] = await promisePool.query("SELECT eventID FROM events WHERE eventID = ?", [eventId]);
     if (events.length === 0) {
       return res.status(404).json({ success: false, message: "Event not found" });
     }
-    
-    // check if user already RSVP'd
+
     const [existing] = await promisePool.query(
       "SELECT id FROM rsvps WHERE event_id = ? AND user_id = ?",
       [eventId, userId]
     );
-    
+
     if (existing.length > 0) {
       return res.status(400).json({ success: false, message: "You already RSVP'd to this event" });
     }
-    
-    // Create RSVP
+
     await promisePool.query(
       "INSERT INTO rsvps (event_id, user_id, rsvp_date) VALUES (?, ?, NOW())",
       [eventId, userId]
     );
-    
-    // get updated RSVP count
+
     const [count] = await promisePool.query(
       "SELECT COUNT(*) as count FROM rsvps WHERE event_id = ?",
       [eventId]
     );
-    
-    res.json({ 
-      success: true, 
-      message: "RSVP successful!", 
-      rsvp_count: count[0].count 
-    });
+
+    res.json({ success: true, message: "RSVP successful!", rsvp_count: count[0].count });
   } catch (error) {
     console.error("RSVP error:", error);
     res.status(500).json({ success: false, message: "RSVP failed" });
   }
 });
 
-// cancel RSVP
+// Cancel RSVP
 app.delete("/api/events/:id/rsvp", async (req, res) => {
   try {
     const eventId = req.params.id;
     const userId = req.session.userId;
-    
+
     if (!userId) {
       return res.status(401).json({ success: false, message: "You must be logged in" });
     }
-    
+
     const [result] = await promisePool.query(
       "DELETE FROM rsvps WHERE event_id = ? AND user_id = ?",
       [eventId, userId]
     );
-    
+
     if (result.affectedRows === 0) {
       return res.status(400).json({ success: false, message: "No RSVP found to cancel" });
     }
-    
-    // Get updated RSVP count
+
     const [count] = await promisePool.query(
       "SELECT COUNT(*) as count FROM rsvps WHERE event_id = ?",
       [eventId]
     );
-    
-    res.json({ 
-      success: true, 
-      message: "RSVP cancelled", 
-      rsvp_count: count[0].count 
-    });
+
+    res.json({ success: true, message: "RSVP cancelled", rsvp_count: count[0].count });
   } catch (error) {
     console.error("Cancel RSVP error:", error);
     res.status(500).json({ success: false, message: "Failed to cancel RSVP" });
   }
 });
 
-// gets RSVP list for an event
+// Get list of RSVPs
 app.get("/api/events/:id/rsvps", async (req, res) => {
   try {
     const eventId = req.params.id;
-    
+
     const [rsvps] = await promisePool.query(
-      `SELECT u.id, u.username, r.rsvp_date
+      `SELECT u.userID AS id, u.username, r.rsvp_date   -- FIXED
        FROM rsvps r
-       JOIN users u ON r.user_id = u.id
+       JOIN users u ON r.user_id = u.userID             -- FIXED
        WHERE r.event_id = ?
        ORDER BY r.rsvp_date DESC`,
       [eventId]
     );
-    
+
     res.json(rsvps);
   } catch (error) {
     console.error("Error fetching RSVPs:", error);
@@ -326,8 +300,9 @@ app.get("/api/events/:id/rsvps", async (req, res) => {
   }
 });
 
-// static file routes
-
+/* ======================================================
+                  static file routing
+====================================================== */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "index.html"));
 });
@@ -348,18 +323,18 @@ app.get("/events", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "events.html"));
 });
 
-// get profile
-
 app.get("/profile", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "profile.html"));
 });
 
-// 404 handler
+// 404
 app.use((req, res) => {
   res.status(404).send("404 Not Found");
 });
 
-// start server
+/* ======================================================
+                    start server!!!!
+====================================================== */
 app.listen(PORT, () => {
   console.log(`UniVerse server running at http://localhost:${PORT}`);
 });
