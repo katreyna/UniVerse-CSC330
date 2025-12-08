@@ -1,0 +1,272 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+html {
+            background: linear-gradient(135deg, #0072d5 0%, #0056b3 50%, #003d82 100%);
+            min-height: 100vh;
+        }
+
+ body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+ /* Animated background shapes */
+.bg-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+.shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            animation: float 20s infinite ease-in-out;
+        }
+
+.shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+.shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            top: 40%;
+            right: -150px;
+            animation-delay: 5s;
+        }
+
+.shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            bottom: -100px;
+            left: 25%;
+            animation-delay: 10s;
+        }
+
+ @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+ /* Navigation */
+nav {
+            position: relative;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+#logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            display: inline-flex;
+        }
+#nav-buttons {
+            display: inline-flex;
+            gap: 10px;
+        }
+
+.sign-up, 
+.login {
+            font-family: 'Poppins', sans-serif;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+.login {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+.login:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+.sign-up {
+            background-color: white;
+            color: #0072d5;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+.sign-up:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+nav a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Landing Page Section */
+ .landing-page {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            min-height: calc(100vh - 80px);
+            padding: 40px 10vw;
+        }
+
+#title {
+            font-size: clamp(48px, 8vw, 72px);
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 25px;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+            margin-top: 0;
+            display: block;
+            text-align: left;
+        }
+
+#description {
+            font-size: clamp(18px, 2vw, 22px);
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease 0.4s backwards;
+            display: block;
+            text-align: left;
+            max-width: 650px;
+        }
+
+        #join {
+            padding: 18px 50px;
+            background-color: white;
+            color: #0072d5;
+            border: none;
+            border-radius: 30px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease 0.6s backwards;
+            margin-left: 0;
+            width: auto;
+        }
+
+#join:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+#join a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Glass Feature Cards */
+.features {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1100px;
+            margin-top: 80px;
+            animation: fadeInUp 0.8s ease 0.8s backwards;
+        }
+
+.feature-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 35px 25px;
+            transition: all 0.3s ease;
+        }
+
+.feature-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+.feature-card h3 {
+            color: white;
+            font-size: 22px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+.feature-card p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+@media (max-width: 768px) {
+       nav {
+                padding: 20px 30px;
+            }
+
+            .landing-page {
+                padding: 40px 5vw;
+            }
+
+            #title {
+                font-size: 42px;
+            }
+
+            #description {
+                font-size: 18px;
+            }
+
+            #join {
+                width: 100%;
+                padding: 16px 40px;
+                font-size: 18px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+                margin-top: 60px;
+            }
+        }
