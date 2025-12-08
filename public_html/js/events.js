@@ -1,112 +1,85 @@
-// Global state
-let currentUser = null;
-
-// Check if user is logged in when page loads
-async function checkLoginStatus() {
-  try {
-    const response = await fetch('/api/session', {
-      credentials: 'include'
-    });
-    const data = await response.json();
-    if (data.loggedIn) {
-      currentUser = data.user;
-      console.log('User logged in:', currentUser);
-    } else {
-      console.log('No user logged in');
-    }
-  } catch (error) {
-    console.error('Error checking login status:', error);
+// Mock data fallback
+const mockEvents = [
+  {
+    id: 101,
+    title: "Intramural Soccer Finals",
+    event_time: "2025-11-20T19:00:00",
+    location: "Moore Field",
+    description: "Come cheer on the teams! Free admission for students.",
+    rsvp_count: 0
+  },
+  {
+    id: 102,
+    title: "Career Fair",
+    event_time: "2025-11-25T10:00:00",
+    location: "Student Center",
+    description: "Tech, finance, and healthcare companies recruiting.",
+    rsvp_count: 0
+  },
+  {
+    id: 103,
+    title: "Fall Concert",
+    event_time: "2025-11-28T20:00:00",
+    location: "University Auditorium",
+    description: "Featuring local bands and student performers!",
+    rsvp_count: 0
   }
 }
 
-// Load events from API
+// Load events from database or fallback to mock data
 async function loadEvents() {
   const container = document.getElementById("events");
   container.innerHTML = '<p class="loading">Loading events...</p>';
-  
+
   try {
-    const response = await fetch('/api/events', {
-      credentials: 'include'
-    });
+    // Try to fetch from database
+    const response = await fetch("/api/events");
     
     if (!response.ok) {
-      throw new Error('Failed to fetch events');
+      throw new Error("Failed to fetch events");
     }
-    
+
     const events = await response.json();
-    console.log("Events loaded:", events);
-    container.innerHTML = "";
     
-    if (events.length === 0) {
-      container.innerHTML = '<p class="no-content">No upcoming events. Check back soon!</p>';
-      return;
-    }
-    
-    // Try to load detailed info for each event (to check RSVP status)
-    // But don't fail if this doesn't work
-    if (currentUser) {
-      for (const event of events) {
-        try {
-          const detailResponse = await fetch(`/api/events/${event.id}`, {
-            credentials: 'include'
-          });
-          if (detailResponse.ok) {
-            const detailedEvent = await detailResponse.json();
-            event.user_rsvped = detailedEvent.user_rsvped;
-          } else {
-            // If detail fetch fails, assume not RSVP'd
-            event.user_rsvped = false;
-          }
-        } catch (err) {
-          console.warn('Could not load RSVP status for event:', event.id);
-          event.user_rsvped = false;
-        }
-      }
-    }
-    
-    // Render events even if detail fetching failed
-    events.forEach(event => {
-      const card = createEventCard(event);
-      container.appendChild(card);
-    });
+    // Server already has mock data fallback, so just display what we get
+    console.log("✅ Loaded events:", events.length);
+    displayEvents(events);
   } catch (error) {
-    console.error('Error loading events:', error);
-    container.innerHTML = '<p class="error">Failed to load events. Please try again later.</p>';
+    // If fetch fails completely, use local mock data
+    console.log("⚠️ Using local mock data:", error);
+    displayEvents(mockEvents);
   }
+}
+
+function displayEvents(events) {
+  const container = document.getElementById("events");
+  container.innerHTML = "";
+  
+  if (events.length === 0) {
+    container.innerHTML = '<p class="no-content">No upcoming events. Check back soon!</p>';
+    return;
+  }
+  
+  events.forEach(event => {
+    const card = createEventCard(event);
+    container.appendChild(card);
+  });
 }
 
 function createEventCard(event) {
   const card = document.createElement("article");
   card.className = "card event-card";
   
-  // Parse the event_time datetime
-  const eventDateTime = new Date(event.event_time);
-  const formattedDate = eventDateTime.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric"
+  const eventDate = new Date(event.event_time);
+  const formattedDate = eventDate.toLocaleDateString("en-US", { 
+    weekday: "short", 
+    month: "short", 
+    day: "numeric" 
   });
-  const formattedTime = eventDateTime.toLocaleTimeString("en-US", {
+  const formattedTime = eventDate.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit"
   });
-  
-  // RSVP count display
-  const rsvpCount = event.rsvp_count || 0;
-  const rsvpText = rsvpCount === 1 ? '1 person going' : `${rsvpCount} people going`;
-  
-  // Determine button state based on login and RSVP status
-  let buttonText = 'Login to RSVP';
-  let buttonClass = 'rsvp-btn';
-  
-  if (currentUser) {
-    if (event.user_rsvped) {
-      buttonText = '✓ RSVP\'d';
-      buttonClass = 'rsvp-btn rsvped';
-    } else {
-      buttonText = 'RSVP';
-    }
-  }
   
   card.innerHTML = `
     <div class="card-badge event">Event</div>
@@ -116,14 +89,7 @@ function createEventCard(event) {
       <i class="fa fa-map-marker"></i> ${escapeHtml(event.location)}
     </p>
     <p class="card-description">${escapeHtml(event.description)}</p>
-    <div class="event-footer">
-      <span class="rsvp-count">
-        <i class="fa fa-users"></i> ${rsvpText}
-      </span>
-      <button class="${buttonClass}" data-event-id="${event.id}" data-rsvped="${event.user_rsvped ? 'true' : 'false'}">
-        ${buttonText}
-      </button>
-    </div>
+    ${event.rsvp_count !== undefined ? `<p class="card-meta"><i class="fa fa-users"></i> ${event.rsvp_count} attending</p>` : ''}
   `;
   
   // Add RSVP button click handler
@@ -263,10 +229,92 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-document.addEventListener("DOMContentLoaded", loadEvents);
-
-// Initialize on page load
-document.addEventListener("DOMContentLoaded", async () => {
-  await checkLoginStatus();
-  await loadEvents();
+// Create Event functionality
+document.addEventListener("DOMContentLoaded", () => {
+  loadEvents();
+  
+  const createEventBtn = document.getElementById("createEventBtn");
+  const createEventForm = document.getElementById("createEventForm");
+  const cancelEventBtn = document.getElementById("cancelEventBtn");
+  const submitEventBtn = document.getElementById("submitEventBtn");
+  const formMessage = document.getElementById("formMessage");
+  
+  // Show create form
+  createEventBtn.addEventListener("click", () => {
+    createEventForm.classList.add("active");
+    formMessage.innerHTML = "";
+  });
+  
+  // Hide create form
+  cancelEventBtn.addEventListener("click", () => {
+    createEventForm.classList.remove("active");
+    clearForm();
+    formMessage.innerHTML = "";
+  });
+  
+  // Submit new event
+  submitEventBtn.addEventListener("click", async () => {
+    const title = document.getElementById("eventTitle").value.trim();
+    const event_time = document.getElementById("eventDateTime").value;
+    const location = document.getElementById("eventLocation").value.trim();
+    const description = document.getElementById("eventDescription").value.trim();
+    
+    // Validation
+    if (!title || !event_time || !location) {
+      showMessage("Please fill in all required fields", "error");
+      return;
+    }
+    
+    // Disable button while submitting
+    submitEventBtn.disabled = true;
+    submitEventBtn.textContent = "Creating...";
+    
+    try {
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ 
+          title, 
+          event_time, 
+          location, 
+          description 
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        showMessage("Event created successfully!", "success");
+        clearForm();
+        
+        // Reload events after 1 second
+        setTimeout(() => {
+          createEventForm.classList.remove("active");
+          loadEvents();
+        }, 1000);
+      } else {
+        showMessage(data.message || "Failed to create event. Please login first.", "error");
+      }
+    } catch (error) {
+      console.error("Error creating event:", error);
+      showMessage("Error creating event. Please try again.", "error");
+    } finally {
+      submitEventBtn.disabled = false;
+      submitEventBtn.textContent = "Create Event";
+    }
+  });
+  
+  function clearForm() {
+    document.getElementById("eventTitle").value = "";
+    document.getElementById("eventDateTime").value = "";
+    document.getElementById("eventLocation").value = "";
+    document.getElementById("eventDescription").value = "";
+  }
+  
+  function showMessage(message, type) {
+    formMessage.innerHTML = `<div class="message ${type}">${message}</div>`;
+  }
 });
