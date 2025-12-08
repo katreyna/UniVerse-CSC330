@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /* open modal */
     editBtn.addEventListener("click", () => {
         modal.style.display = "block";
-
         editUsername.value = usernameEl.textContent.trim();
         editBio.value = bioEl.textContent.trim() || "";
     });
@@ -47,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* save changes */
     saveBtn.addEventListener("click", () => {
-
         usernameEl.textContent = editUsername.value;
         bioEl.textContent = editBio.value;
 
@@ -62,4 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         modal.style.display = "none";
     });
-});
+
+});  // <-- this was missing
+
