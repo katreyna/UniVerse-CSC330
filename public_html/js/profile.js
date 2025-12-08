@@ -1,8 +1,25 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    /* switch tabs */
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* ---------- elements ---------- */
     const tabButtons = document.querySelectorAll(".tab-button");
     const tabContents = document.querySelectorAll(".tab-content");
 
+    const usernameEl = document.getElementById("username");
+    const bioEl = document.getElementById("bio");
+    const profilePicEl = document.getElementById("profile-pic");
+    const followersEl = document.getElementById("followers-count");
+    const followingEl = document.getElementById("following-count");
+
+    const editBtn = document.getElementById("edit-profile-button");
+    const modal = document.getElementById("edit-profile-modal");
+    const closeBtn = document.querySelector(".close");
+    const saveBtn = document.getElementById("save-changes");
+
+    const editUsername = document.getElementById("edit-username");
+    const editBio = document.getElementById("edit-bio");
+    const editPic = document.getElementById("edit-pic");
+
+    /* ---------- switch tabs ---------- */
     tabButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             tabButtons.forEach(b => b.classList.remove("active"));
@@ -13,84 +30,67 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     });
 
-    /* edit profile */
-    const modal = document.getElementById("edit-profile-modal");
-    const editBtn = document.getElementById("edit-profile-button");
-    const closeBtn = document.querySelector(".close");
-    const saveBtn = document.getElementById("save-changes");
-
-    const usernameEl = document.getElementById("username");
-    const bioEl = document.getElementById("bio");
-    const profilePic = document.getElementById("profile-pic");
-
-    const editUsername = document.getElementById("edit-username");
-    const editBio = document.getElementById("edit-bio");
-    const editPic = document.getElementById("edit-pic");
-
-    // load profile from server
+    /* ---------- load profile ---------- */
     async function loadProfile() {
         try {
             const res = await fetch("/api/profile", { credentials: "include" });
-            const data = await res.json();
+            if (!res.ok) throw new Error("Failed to load profile");
 
-            if (res.ok) {
-                usernameEl.textContent = data.username;
-                bioEl.textContent = data.bio || "";
-                profilePic.src = data.profile_pic || "/default-profile.png";
-            } else {
-                console.error("Failed to load profile:", data.error);
-            }
+            const data = await res.json();
+            usernameEl.textContent = data.username;
+            bioEl.textContent = data.bio || "";
+            profilePicEl.src = data.profile_pic || "/images/default-profile.png";
+            followersEl.textContent = data.followers || 0;
+            followingEl.textContent = data.following || 0;
         } catch (err) {
-            console.error("Profile fetch error:", err);
+            console.error("Failed to load profile:", err);
         }
     }
 
-    await loadProfile();
+    loadProfile();
 
-    /* open modal */
+    /* ---------- edit profile modal ---------- */
     editBtn.addEventListener("click", () => {
         modal.style.display = "block";
         editUsername.value = usernameEl.textContent.trim();
-        editBio.value = bioEl.textContent.trim() || "";
+        editBio.value = bioEl.textContent.trim();
     });
 
-    /* close modal */
     closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
     });
 
-    window.onclick = (e) => {
+    window.addEventListener("click", (e) => {
         if (e.target === modal) modal.style.display = "none";
-    };
+    });
 
-    /* save changes */
+    /* ---------- save profile changes ---------- */
     saveBtn.addEventListener("click", async () => {
         const formData = new FormData();
-        formData.append("username", editUsername.value);
-        formData.append("bio", editBio.value);
-
-        if (editPic.files && editPic.files[0]) {
-            formData.append("profile_pic", editPic.files[0]);
-        }
+        formData.append("username", editUsername.value.trim());
+        formData.append("bio", editBio.value.trim());
+        if (editPic.files && editPic.files[0]) formData.append("profile_pic", editPic.files[0]);
 
         try {
-            const res = await fetch("/api/profile/update", {
-                method: "POST",
+            const res = await fetch("/api/profile", {
+                method: "PUT",
                 credentials: "include",
                 body: formData
             });
-            const data = await res.json();
 
-            if (res.ok && data.success) {
-                usernameEl.textContent = editUsername.value;
-                bioEl.textContent = editBio.value;
-                if (data.profile_pic) profilePic.src = data.profile_pic;
-                modal.style.display = "none";
-            } else {
-                alert("Failed to update profile: " + data.message);
-            }
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.message || "Failed to update");
+
+            // Update UI with new info
+            usernameEl.textContent = editUsername.value.trim();
+            bioEl.textContent = editBio.value.trim();
+            if (result.profile_pic) profilePicEl.src = result.profile_pic;
+
+            modal.style.display = "none";
         } catch (err) {
-            console.error("Update profile error:", err);
+            console.error("Failed to update profile:", err);
+            alert("Failed to update profile");
         }
     });
+
 });
