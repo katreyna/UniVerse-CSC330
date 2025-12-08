@@ -24,7 +24,7 @@ const mockEvents = [
     description: "Featuring local bands and student performers!",
     rsvp_count: 0
   }
-];
+}
 
 // Load events from database or fallback to mock data
 async function loadEvents() {
@@ -92,7 +92,134 @@ function createEventCard(event) {
     ${event.rsvp_count !== undefined ? `<p class="card-meta"><i class="fa fa-users"></i> ${event.rsvp_count} attending</p>` : ''}
   `;
   
+  // Add RSVP button click handler
+  const rsvpBtn = card.querySelector('.rsvp-btn');
+  rsvpBtn.addEventListener('click', () => handleRSVP(event.id, rsvpBtn));
+  
   return card;
+}
+
+async function handleRSVP(eventId, button) {
+  // Check if user is logged in
+  if (!currentUser) {
+    alert('Please log in to RSVP to events');
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isRsvped = button.dataset.rsvped === 'true';
+  
+  // If already RSVP'd, cancel the RSVP
+  if (isRsvped) {
+    if (!confirm('Do you want to cancel your RSVP?')) {
+      return;
+    }
+    await cancelRSVP(eventId, button);
+    return;
+  }
+  
+  // Disable button while processing
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Processing...';
+  
+  try {
+    const response = await fetch(`/api/events/${eventId}/rsvp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update button
+      button.textContent = '✓ RSVP\'d';
+      button.classList.add('rsvped');
+      button.dataset.rsvped = 'true';
+      button.disabled = false;
+      
+      // Update count
+      const countElement = button.parentElement.querySelector('.rsvp-count');
+      const count = data.rsvp_count;
+      const countText = count === 1 ? '1 person going' : `${count} people going`;
+      countElement.innerHTML = `<i class="fa fa-users"></i> ${countText}`;
+      
+      // Show success message
+      showNotification('RSVP successful!', 'success');
+    } else {
+      alert(data.message || 'RSVP failed');
+      button.textContent = originalText;
+      button.disabled = false;
+    }
+  } catch (error) {
+    console.error('RSVP error:', error);
+    alert('Failed to RSVP. Please try again.');
+    button.textContent = originalText;
+    button.disabled = false;
+  }
+}
+
+async function cancelRSVP(eventId, button) {
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Canceling...';
+  
+  try {
+    const response = await fetch(`/api/events/${eventId}/rsvp`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update button
+      button.textContent = 'RSVP';
+      button.classList.remove('rsvped');
+      button.dataset.rsvped = 'false';
+      button.disabled = false;
+      
+      // Update count
+      const countElement = button.parentElement.querySelector('.rsvp-count');
+      const count = data.rsvp_count;
+      const countText = count === 1 ? '1 person going' : `${count} people going`;
+      countElement.innerHTML = `<i class="fa fa-users"></i> ${countText}`;
+      
+      // Show success message
+      showNotification('RSVP cancelled', 'info');
+    } else {
+      alert(data.message || 'Failed to cancel RSVP');
+      button.textContent = originalText;
+      button.disabled = false;
+    }
+  } catch (error) {
+    console.error('Cancel RSVP error:', error);
+    alert('Failed to cancel RSVP. Please try again.');
+    button.textContent = originalText;
+    button.disabled = false;
+  }
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+  
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
 }
 
 function escapeHtml(text) {
