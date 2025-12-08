@@ -41,103 +41,100 @@ const promisePool = connection_pool.promise();
                         profile
 ====================================================== */
 
-// multer storage config for profile pictures
+
+// Multer storage config for profile pictures
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, "public_html", "uploads", "profiles");
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `user-${req.session.userId}${ext}`);
-  }
+    destination: (req, file, cb) => {
+        const dir = path.join(__dirname, "public_html", "uploads", "profiles");
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `user-${req.session.userId}${ext}`);
+    }
 });
 const upload = multer({ storage });
 
-// get profile
+// GET logged-in user's profile
 app.get("/api/profile", async (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: "Not logged in" });
-  }
+    if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
 
-  try {
-    const [rows] = await promisePool.query(
-      `SELECT u.userID, u.username, u.email, u.bio, u.profile_pic,
-              (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
-              (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following
-       FROM users u
-       WHERE u.userID = ?`,
-      [req.session.userId]
-    );
+    try {
+        const [rows] = await promisePool.query(
+            `SELECT u.userID, u.username, u.email, u.bio, u.profile_pic,
+                (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
+                (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following
+             FROM users u
+             WHERE u.userID = ?`,
+            [req.session.userId]
+        );
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Profile not found" });
+        if (rows.length === 0) return res.status(404).json({ error: "Profile not found" });
+
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Profile error:", err);
+        res.status(500).json({ error: "Failed to load profile" });
     }
-
-    res.json(rows[0]);
-  } catch (error) {
-    console.error("Profile error:", error);
-    res.status(500).json({ error: "Failed to load profile" });
-  }
 });
 
-// update profile (username, bio, profile picture)
+// update logged-in user's profile
 app.post("/api/profile/update", upload.single("profile_pic"), async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
+    if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
 
-  const { username, bio } = req.body;
-  let profilePicPath;
+    const { username, bio } = req.body;
+    let profilePicPath;
 
-  if (req.file) {
-    profilePicPath = `/uploads/profiles/${req.file.filename}`;
-  }
-
-  try {
-    let query = "UPDATE users SET username = ?, bio = ?";
-    const params = [username, bio];
-
-    if (profilePicPath) {
-      query += ", profile_pic = ?";
-      params.push(profilePicPath);
+    if (req.file) {
+        profilePicPath = `/uploads/profiles/${req.file.filename}`;
     }
 
-    query += " WHERE userID = ?";
-    params.push(req.session.userId);
+    try {
+        let query = "UPDATE users SET username = ?, bio = ?";
+        const params = [username, bio];
 
-    await promisePool.query(query, params);
+        if (profilePicPath) {
+            query += ", profile_pic = ?";
+            params.push(profilePicPath);
+        }
 
-    // Update session username so other parts of app use correct value
-    req.session.username = username;
+        query += " WHERE userID = ?";
+        params.push(req.session.userId);
 
-    res.json({ success: true, message: "Profile updated!", profile_pic: profilePicPath });
-  } catch (err) {
-    console.error("Update profile error:", err);
-    res.status(500).json({ success: false, message: "Failed to update profile" });
-  }
+        await promisePool.query(query, params);
+
+        // Update session username for other parts of the app
+        req.session.username = username;
+
+        res.json({ success: true, message: "Profile updated!", profile_pic: profilePicPath });
+    } catch (err) {
+        console.error("Update profile error:", err);
+        res.status(500).json({ success: false, message: "Failed to update profile" });
+    }
 });
 
-// load other user's profile by ID (for viewing other users)
+// get another user's profile by ID
 app.get("/api/profile/:id", async (req, res) => {
-  const profileId = req.params.id;
+    const profileId = req.params.id;
 
-  try {
-    const [rows] = await promisePool.query(
-      `SELECT userID, username, bio, profile_pic,
-              (SELECT COUNT(*) FROM followers WHERE followee_id = users.userID) AS followers,
-              (SELECT COUNT(*) FROM followers WHERE follower_id = users.userID) AS following
-       FROM users
-       WHERE userID = ?`,
-      [profileId]
-    );
+    try {
+        const [rows] = await promisePool.query(
+            `SELECT u.userID, u.username, u.bio, u.profile_pic,
+                (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
+                (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following
+             FROM users u
+             WHERE u.userID = ?`,
+            [profileId]
+        );
 
-    if (rows.length === 0) return res.status(404).json({ error: "Profile not found" });
+        if (rows.length === 0) return res.status(404).json({ error: "Profile not found" });
 
-    res.json(rows[0]);
-  } catch (err) {
-    console.error("Profile fetch error:", err);
-    res.status(500).json({ error: "Failed to fetch profile" });
-  }
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Profile fetch error:", err);
+        res.status(500).json({ error: "Failed to fetch profile" });
+    }
 });
 
 
