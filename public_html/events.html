@@ -6,6 +6,123 @@
   <link rel="stylesheet" href="style/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    .create-event-section {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .create-btn {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    
+    .create-btn:hover {
+      background: #F57C00;
+    }
+    
+    .create-form {
+      display: none;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    
+    .create-form.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
+    }
+    
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    .submit-btn {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .cancel-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .submit-btn:hover {
+      background: #1976D2;
+    }
+    
+    .cancel-btn:hover {
+      background: #da190b;
+    }
+    
+    .message {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
 </head>
 <body>
   <nav>
@@ -21,6 +138,43 @@
   <div class="container">
     <h1>Campus Events</h1>
     <p class="subtitle">Discover and RSVP to upcoming events</p>
+    
+    <!-- Create Event Section -->
+    <div class="create-event-section">
+      <button id="createEventBtn" class="create-btn">
+        <i class="fa fa-plus"></i> Create Event
+      </button>
+      
+      <div id="createEventForm" class="create-form">
+        <h2>Create a New Event</h2>
+        <div id="formMessage"></div>
+        
+        <div class="form-group">
+          <label for="eventTitle">Event Title *</label>
+          <input type="text" id="eventTitle" placeholder="Enter event title" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="eventDateTime">Date & Time *</label>
+          <input type="datetime-local" id="eventDateTime" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="eventLocation">Location *</label>
+          <input type="text" id="eventLocation" placeholder="Enter location" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="eventDescription">Description</label>
+          <textarea id="eventDescription" placeholder="Event details..."></textarea>
+        </div>
+        
+        <div class="form-buttons">
+          <button id="cancelEventBtn" class="cancel-btn">Cancel</button>
+          <button id="submitEventBtn" class="submit-btn">Create Event</button>
+        </div>
+      </div>
+    </div>
     
     <div id="events" class="card-list">
       <p class="loading">Loading events...</p>
