@@ -14,13 +14,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
-   /* edit profile popup */
-   
+    /* edit profile */
     const modal = document.getElementById("edit-profile-modal");
-    const editButton = document.getElementById("edit-profile-button");   
-    const closeButton = document.querySelector(".close");                
-    const saveButton = document.getElementById("save-changes");         
+    const editBtn = document.getElementById("edit-profile-button");
+    const closeBtn = document.querySelector(".close");
+    const saveBtn = document.getElementById("save-changes");
 
     const usernameEl = document.getElementById("username");
     const bioEl = document.getElementById("bio");
@@ -30,26 +28,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const editBio = document.getElementById("edit-bio");
     const editPic = document.getElementById("edit-pic");
 
-    editButton.addEventListener("click", () => {   
+    /* open modal */
+    editBtn.addEventListener("click", () => {
         modal.style.display = "block";
-        editUsername.value = usernameEl.textContent;
-        editBio.value = bioEl.textContent;
+
+        editUsername.value = usernameEl.textContent.trim();
+        editBio.value = bioEl.textContent.trim() || "";
     });
 
-    closeButton.addEventListener("click", () => {  
+    /* close modal */
+    closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
     });
 
-    window.onclick = function(e) {
+    window.onclick = (e) => {
         if (e.target === modal) modal.style.display = "none";
     };
 
+    /* save changes */
+    saveBtn.addEventListener("click", () => {
 
-    /* save profile changes */
-    saveButton.addEventListener("click", () => {  
         usernameEl.textContent = editUsername.value;
         bioEl.textContent = editBio.value;
 
+        /* image preview */
         if (editPic.files && editPic.files[0]) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -60,3 +62,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
         modal.style.display = "none";
     });
+});
