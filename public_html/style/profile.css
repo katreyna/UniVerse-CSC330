@@ -1,4 +1,4 @@
-      * {
+* {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -48,6 +48,14 @@
             top: 50px;
             right: -100px;
             animation-delay: 5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            bottom: -100px;
+            left: 25%;
+            animation-delay: 10s;
         }
 
         .shape:nth-child(3) {
