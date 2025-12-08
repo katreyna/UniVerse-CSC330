@@ -153,13 +153,14 @@ app.get("/api/session", (req, res) => {
 // Get all posts
 app.get("/api/posts", async (req, res) => {
   try {
-    const [posts] = await promisePool.query(
-      `SELECT p.postID AS id, p.user_id AS userId, u.username, u.profile_pic, 
-              p.content, p.created
-       FROM posts p
-       JOIN users u ON p.user_id = u.userID
-       ORDER BY p.created DESC`
-    );
+    const [posts] = await promisePool.query(`
+        SELECT p.postID AS id, p.userID AS userId, u.username, u.profile_pic,
+        p.content, p.created
+        FROM posts p
+        JOIN users u ON p.userID = u.userID
+        ORDER BY p.created DESC
+`);
+
     res.json(posts);
   } catch (error) {
     console.error("Failed to fetch posts:", error);
