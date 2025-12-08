@@ -147,6 +147,54 @@ app.get("/api/session", (req, res) => {
 });
 
 /* ======================================================
+                        posts
+====================================================== */
+
+// Get all posts
+app.get("/api/posts", async (req, res) => {
+  try {
+    const [posts] = await promisePool.query(
+      `SELECT p.postID AS id, p.user_id AS userId, u.username, u.profile_pic, 
+              p.content, p.created
+       FROM posts p
+       JOIN users u ON p.user_id = u.userID
+       ORDER BY p.created DESC`
+    );
+    res.json(posts);
+  } catch (error) {
+    console.error("Failed to fetch posts:", error);
+    res.status(500).json({ error: "Failed to fetch posts" });
+  }
+});
+
+// Create a new post
+app.post("/api/posts", async (req, res) => {
+  const userId = req.session.userId;
+  const { content } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "You must be logged in to post" });
+  }
+
+  if (!content || content.trim() === "") {
+    return res.status(400).json({ success: false, message: "Post content cannot be empty" });
+  }
+
+  try {
+    await promisePool.query(
+      "INSERT INTO posts (user_id, content, created) VALUES (?, ?, NOW())",
+      [userId, content]
+    );
+
+    res.json({ success: true, message: "Post created successfully" });
+  } catch (error) {
+    console.error("Error creating post:", error);
+    res.status(500).json({ success: false, message: "Failed to create post" });
+  }
+});
+
+
+/* ======================================================
                         events
 ====================================================== */
 
