@@ -40,6 +40,7 @@ const promisePool = connection_pool.promise();
 /* ======================================================
                         profile
 ====================================================== */
+
 // multer storage config for profile pictures
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -56,23 +57,27 @@ const upload = multer({ storage });
 
 // get profile
 app.get("/api/profile", async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
 
   try {
     const [rows] = await promisePool.query(
-      `SELECT userID, username, email, bio, profile_pic,
-              (SELECT COUNT(*) FROM followers WHERE followee_id = users.userID) AS followers,
-              (SELECT COUNT(*) FROM followers WHERE follower_id = users.userID) AS following
-       FROM users
-       WHERE userID = ?`,
+      `SELECT u.userID, u.username, u.email, u.bio, u.profile_pic,
+              (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
+              (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following
+       FROM users u
+       WHERE u.userID = ?`,
       [req.session.userId]
     );
 
-    if (rows.length === 0) return res.status(404).json({ error: "Profile not found" });
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
 
     res.json(rows[0]);
-  } catch (err) {
-    console.error("Profile error:", err);
+  } catch (error) {
+    console.error("Profile error:", error);
     res.status(500).json({ error: "Failed to load profile" });
   }
 });
