@@ -1,5 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
-
+document.addEventListener("DOMContentLoaded", async () => {
     /* switch tabs */
     const tabButtons = document.querySelectorAll(".tab-button");
     const tabContents = document.querySelectorAll(".tab-content");
@@ -28,6 +27,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const editBio = document.getElementById("edit-bio");
     const editPic = document.getElementById("edit-pic");
 
+    // load profile from server
+    async function loadProfile() {
+        try {
+            const res = await fetch("/api/profile", { credentials: "include" });
+            const data = await res.json();
+
+            if (res.ok) {
+                usernameEl.textContent = data.username;
+                bioEl.textContent = data.bio || "";
+                profilePic.src = data.profile_pic || "/default-profile.png";
+            } else {
+                console.error("Failed to load profile:", data.error);
+            }
+        } catch (err) {
+            console.error("Profile fetch error:", err);
+        }
+    }
+
+    await loadProfile();
+
     /* open modal */
     editBtn.addEventListener("click", () => {
         modal.style.display = "block";
@@ -45,21 +64,33 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     /* save changes */
-    saveBtn.addEventListener("click", () => {
-        usernameEl.textContent = editUsername.value;
-        bioEl.textContent = editBio.value;
+    saveBtn.addEventListener("click", async () => {
+        const formData = new FormData();
+        formData.append("username", editUsername.value);
+        formData.append("bio", editBio.value);
 
-        /* image preview */
         if (editPic.files && editPic.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                profilePic.src = e.target.result;
-            };
-            reader.readAsDataURL(editPic.files[0]);
+            formData.append("profile_pic", editPic.files[0]);
         }
 
-        modal.style.display = "none";
+        try {
+            const res = await fetch("/api/profile/update", {
+                method: "POST",
+                credentials: "include",
+                body: formData
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                usernameEl.textContent = editUsername.value;
+                bioEl.textContent = editBio.value;
+                if (data.profile_pic) profilePic.src = data.profile_pic;
+                modal.style.display = "none";
+            } else {
+                alert("Failed to update profile: " + data.message);
+            }
+        } catch (err) {
+            console.error("Update profile error:", err);
+        }
     });
-
-});  // <-- this was missing
-
+});
