@@ -35,6 +35,8 @@ const connection_pool = mysql.createPool({
 
 const promisePool = connection_pool.promise();
 
+
+
 /* ======================================================
                         profile
 ====================================================== */
@@ -338,3 +340,8 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`UniVerse server running at http://localhost:${PORT}`);
 });
+/* ---------- test ---------- */
+promisePool.query("SELECT 1")
+  .then(() => console.log("✅ Connected to MySQL successfully!"))
+  .catch((err) => console.error("❌ MySQL connection failed:", err));
+
