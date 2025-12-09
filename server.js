@@ -350,6 +350,32 @@ app.get("/api/users/:id/events", async (req, res) => {
     }
 });
 
+// get a user's rsvps
+app.get("/api/users/:id/rsvps", async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const [events] = await promisePool.query(
+            `SELECT e.eventID as id, e.title, e.event_time as date, 
+                    e.location, e.description,
+                    COUNT(r2.id) as rsvp_count,
+                    r.rsvp_date
+             FROM rsvps r
+             JOIN events e ON r.event_id = e.eventID
+             LEFT JOIN rsvps r2 ON e.eventID = r2.event_id
+             WHERE r.userID = ?
+             GROUP BY e.eventID, e.title, e.event_time, e.location, e.description, r.rsvp_date
+             ORDER BY e.event_time ASC`,
+            [userId]
+        );
+
+        res.json(events);
+    } catch (err) {
+        console.error("Failed to fetch user RSVPs:", err);
+        res.status(500).json({ error: "Failed to fetch RSVPs" });
+    }
+});
+
 /* ======================================================
                         register
 ====================================================== */
