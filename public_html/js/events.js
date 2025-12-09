@@ -28,6 +28,21 @@ const mockEvents = [
 
 let currentUser = null;
 
+// Load logged-in user so RSVP knows who is using the app
+async function loadCurrentUser() {
+  try {
+    const res = await fetch("/api/profile", { credentials: "include" });
+    if (res.ok) {
+      currentUser = await res.json();
+      console.log("Logged-in user:", currentUser);
+    } else {
+      console.warn("User not logged in");
+    }
+  } catch (err) {
+    console.error("Failed to load current user", err);
+  }
+}
+
 // Load events from database or fallback to mock data
 async function loadEvents() {
   const container = document.getElementById("events");
