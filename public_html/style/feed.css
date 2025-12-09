@@ -18,12 +18,16 @@ body {
 }
 
 /* small icon for posts */
-.user-avatar-small img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
+
+.user-avatar-small,
+.post-avatar,
+.reply-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
 }
+
 
 /* Animated background shapes */
 .bg-shapes {
