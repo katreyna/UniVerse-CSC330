@@ -2,6 +2,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get username from URL path
     const pathParts = window.location.pathname.split('/');
     const username = pathParts[pathParts.length - 1];
+
+    // checks if own profile
+    const isOwnProfile = !lastPart || 
+                         lastPart === 'profile' || 
+                         lastPart === 'profile.html' || 
+                         lastPart.endsWith('.html') ||
+                         lastPart === '';
+    
+    // Only set username if it's actually another user's profile
+    const username = isOwnProfile ? null : lastPart;
+
+    if (!isOwnProfile && username === 'user') {
+        document.getElementById('loading').innerHTML = '<div class="error-message">No user specified</div>';
+        return;
+    }
     
     // Determine if this is the current user's own profile
     const isOwnProfile = !username || username === 'profile' || username === '';
