@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Update UI
                     btn.classList.toggle('liked');
                     const likeCountEl = btn.querySelector('.like-count');
-                    likeCountEl.textContent = data.like_count || 0;
+                    likeCountEl.textContent = data.like_count || data.likeCount || 0;
 
                 } catch (err) {
                     console.error('Failed to update like:', err);
