@@ -6,11 +6,14 @@ async function getCurrentUser() {
   try {
     const res = await fetch('/api/session', { credentials: 'include' });
     const data = await res.json();
+
     if (data.loggedIn) {
       currentUser = data.user;
+
       const avatar = document.getElementById('currentUserAvatar');
       if (avatar) {
-        avatar.textContent = data.user.username.charAt(0).toUpperCase();
+        const profilePic = data.user.profile_pic || '/uploads/profiles/default.png';
+        avatar.innerHTML = `<img src="${profilePic}" alt="${currentUser.username}" />`;
       }
     } else {
       window.location.href = '/login.html';
