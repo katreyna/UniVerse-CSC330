@@ -88,40 +88,43 @@
             }
         }
 
-        // Follow/Unfollow
-        actionButton.addEventListener('click', async () => {
-            try {
-                const isFollowing = actionButton.classList.contains('following');
-                const endpoint = isFollowing ? 'unfollow' : 'follow';
+        // Follow/Unfollow button
+actionButton.addEventListener('click', async () => {
+    try {
+        const isFollowing = actionButton.classList.contains('following');
+        const endpoint = isFollowing ? 'unfollow' : 'follow';
 
-                const res = await fetch(`/api/users/${window.currentProfileUserId}/${endpoint}`, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-
-                if (res.status === 401) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-
-                if (!res.ok) throw new Error('Failed to update follow status');
-
-                // Toggle button state
-                if (isFollowing) {
-                    actionButton.textContent = 'Follow';
-                    actionButton.classList.remove('following');
-                    followersEl.textContent = parseInt(followersEl.textContent) - 1;
-                } else {
-                    actionButton.textContent = 'Following';
-                    actionButton.classList.add('following');
-                    followersEl.textContent = parseInt(followersEl.textContent) + 1;
-                }
-
-            } catch (err) {
-                console.error('Failed to update follow status:', err);
-                alert('Failed to update follow status');
-            }
+        const res = await fetch(`/api/users/${window.currentProfileUserId}/${endpoint}`, {
+            method: 'POST',
+            credentials: 'include'
         });
+
+        if (res.status === 401) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        if (!res.ok) throw new Error('Failed to update follow status');
+
+        const data = await res.json();
+
+        // Update button state and followers count based on server response
+        if (isFollowing) {
+            actionButton.textContent = 'Follow';
+            actionButton.classList.remove('following');
+        } else {
+            actionButton.textContent = 'Following';
+            actionButton.classList.add('following');
+        }
+
+        // Update followers count directly from server
+        followersEl.textContent = data.followers;
+
+    } catch (err) {
+        console.error('Failed to update follow status:', err);
+        alert('Failed to update follow status');
+    }
+});
 
         // Load user posts
         async function loadUserPosts() {
