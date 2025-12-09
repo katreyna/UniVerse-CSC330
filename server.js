@@ -940,7 +940,7 @@ app.delete("/api/events/:id/rsvp", async (req, res) => {
 
     const [count] = await promisePool.query(
       "SELECT COUNT(*) as count FROM rsvps WHERE eventID = ?",
-      [eventID]
+      [eventId]
     );
 
     res.json({ success: true, message: "RSVP cancelled", rsvp_count: count[0].count });
