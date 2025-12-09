@@ -23,8 +23,8 @@ body {
 .user-avatar-small img,
 .post-avatar img,
 .reply-avatar img {
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   object-fit: cover;   /* crop instead of stretching */
   border-radius: 50%;  /* ensure circular shape */
 }
