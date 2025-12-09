@@ -336,7 +336,7 @@ app.get("/api/users/:id/events", async (req, res) => {
                     e.location, e.description,
                     COUNT(r.id) as rsvp_count
              FROM events e
-             LEFT JOIN rsvps r ON e.eventID = r.event_id
+             LEFT JOIN rsvps r ON e.eventID = r.eventID
              WHERE e.userID = ?
              GROUP BY e.eventID, e.title, e.event_time, e.location, e.description
              ORDER BY e.event_time ASC`,
@@ -361,8 +361,8 @@ app.get("/api/users/:id/rsvps", async (req, res) => {
                     COUNT(r2.id) as rsvp_count,
                     r.rsvp_date
              FROM rsvps r
-             JOIN events e ON r.event_id = e.eventID
-             LEFT JOIN rsvps r2 ON e.eventID = r2.event_id
+             JOIN events e ON r.eventID = e.eventID
+             LEFT JOIN rsvps r2 ON e.eventID = r2.eventID
              WHERE r.userID = ?
              GROUP BY e.eventID, e.title, e.event_time, e.location, e.description, r.rsvp_date
              ORDER BY e.event_time ASC`,
@@ -759,7 +759,7 @@ app.get("/api/events", async (req, res) => {
       `SELECT e.eventID as id, e.title, e.event_time, e.location, e.description,
         COUNT(r.id) as rsvp_count
        FROM events e
-       LEFT JOIN rsvps r ON e.eventID = r.event_id
+       LEFT JOIN rsvps r ON e.eventID = r.eventID
        GROUP BY e.eventID, e.title, e.event_time, e.location, e.description
        ORDER BY e.event_time ASC`
     );
@@ -865,7 +865,7 @@ app.post("/api/events/:id/rsvp", async (req, res) => {
     }
 
     const [existing] = await promisePool.query(
-      "SELECT id FROM rsvps WHERE event_id = ? AND userID = ?",
+      "SELECT id FROM rsvps WHERE eventID = ? AND userID = ?",
       [eventId, userId]
     );
 
@@ -874,12 +874,12 @@ app.post("/api/events/:id/rsvp", async (req, res) => {
     }
 
     await promisePool.query(
-      "INSERT INTO rsvps (event_id, userID, rsvp_date) VALUES (?, ?, NOW())",
+      "INSERT INTO rsvps (eventID, userID, rsvp_date) VALUES (?, ?, NOW())",
       [eventId, userId]
     );
 
     const [count] = await promisePool.query(
-      "SELECT COUNT(*) as count FROM rsvps WHERE event_id = ?",
+      "SELECT COUNT(*) as count FROM rsvps WHERE eventID = ?",
       [eventId]
     );
 
@@ -930,7 +930,7 @@ app.delete("/api/events/:id/rsvp", async (req, res) => {
     }
 
     const [result] = await promisePool.query(
-      "DELETE FROM rsvps WHERE event_id = ? AND userID = ?",
+      "DELETE FROM rsvps WHERE eventID = ? AND userID = ?",
       [eventId, userId]
     );
 
