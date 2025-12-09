@@ -395,31 +395,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cancel RSVP function
     window.cancelRsvp = async function(eventId) {
-        if (!confirm('Do you want to cancel your RSVP?')) {
+    if (!confirm('Do you want to cancel your RSVP?')) return;
+
+    try {
+        const res = await fetch(`/api/events/${eventId}/rsvp`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (res.status === 401) {
+            window.location.href = '/login.html';
             return;
         }
 
-        try {
-            const res = await fetch(`/api/events/${eventId}/rsvp`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+        const data = await res.json();
 
-            if (res.status === 401) {
-                window.location.href = '/login.html';
-                return;
-            }
-
-            if (!res.ok) throw new Error('Failed to cancel RSVP');
-
-            alert('RSVP cancelled successfully!');
-            loadUserEvents(); // Reload the events list
-
-        } catch (err) {
-            console.error('Failed to cancel RSVP:', err);
-            alert('Failed to cancel RSVP');
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to cancel RSVP');
         }
-    };
+
+        alert('RSVP cancelled successfully!');
+        loadUserEvents(); // Reload the events list
+
+    } catch (err) {
+        console.error('Failed to cancel RSVP:', err);
+        alert(err.message || 'Failed to cancel RSVP');
+    }
+};
 
     // Edit profile modal (only for own profile)
     if (isOwnProfile && editBtn && modal) {
