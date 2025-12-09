@@ -3,8 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const pathParts = window.location.pathname.split('/');
     const lastPart = pathParts[pathParts.length - 1];
     
-    // Determine if this is the current user's own profile
-    // Own profile if: empty, 'profile', 'profile.html', or ends with .html
     const isOwnProfile = !lastPart || 
                          lastPart === 'profile' || 
                          lastPart === 'profile.html' || 
@@ -335,10 +333,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Load user events (for other profiles)
+    // Load user events (RSVP'd events)
     async function loadUserEvents() {
         try {
-            const res = await fetch(`/api/users/${window.currentProfileUserId}/events`, { 
+            const res = await fetch(`/api/users/${window.currentProfileUserId}/rsvps`, { 
                 credentials: 'include' 
             });
 
@@ -354,38 +352,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 emptyMsg.style.textAlign = 'center';
                 emptyMsg.style.color = 'rgba(255,255,255,0.7)';
                 emptyMsg.style.padding = '20px';
-                emptyMsg.textContent = 'No events yet';
+                emptyMsg.textContent = 'No RSVP\'d events yet';
                 eventsList.innerHTML = '';
                 eventsList.appendChild(emptyMsg);
                 return;
             }
 
-            eventsList.innerHTML = events.map(event => `
-                <div class="card">
-                    <div class="card-badge event">Event</div>
-                    <h2>${event.title || 'Untitled Event'}</h2>
-                    <div class="card-meta">
-                        <i class="fa fa-calendar"></i> ${event.date || 'TBA'} <br>
-                        <i class="fa fa-map-marker"></i> ${event.location || 'Location TBA'}
+            eventsList.innerHTML = events.map(event => {
+                const eventDate = new Date(event.date);
+                const formattedDate = eventDate.toLocaleDateString("en-US", { 
+                    weekday: "short", 
+                    month: "short", 
+                    day: "numeric",
+                    year: "numeric"
+                });
+                const formattedTime = eventDate.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit"
+                });
+                
+                return `
+                    <div class="card">
+                        <div class="card-badge event">Event</div>
+                        <h2>${event.title || 'Untitled Event'}</h2>
+                        <div class="card-meta">
+                            <i class="fa fa-calendar"></i> ${formattedDate} at ${formattedTime}<br>
+                            <i class="fa fa-map-marker"></i> ${event.location || 'Location TBA'}
+                        </div>
+                        <div class="card-description">${event.description || ''}</div>
+                        <div class="event-footer">
+                            <span class="rsvp-count"><i class="fa fa-users"></i> ${event.rsvp_count || 0} going</span>
+                            <button class="rsvp-btn rsvped" onclick="cancelRsvp(${event.id})">✓ RSVP'd</button>
+                        </div>
                     </div>
-                    <div class="card-description">${event.description || ''}</div>
-                    <div class="event-footer">
-                        <span class="rsvp-count"><i class="fa fa-users"></i> ${event.rsvp_count || 0} going</span>
-                        <button class="rsvp-btn" onclick="rsvpEvent(${event.id})">RSVP</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
         } catch (err) {
             console.error('Failed to load events:', err);
         }
     }
 
-    // RSVP to event (for other profiles)
-    window.rsvpEvent = async function(eventId) {
+    // Cancel RSVP function
+    window.cancelRsvp = async function(eventId) {
+        if (!confirm('Do you want to cancel your RSVP?')) {
+            return;
+        }
+
         try {
             const res = await fetch(`/api/events/${eventId}/rsvp`, {
-                method: 'POST',
+                method: 'DELETE',
                 credentials: 'include'
             });
 
@@ -394,14 +410,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (!res.ok) throw new Error('Failed to RSVP');
+            if (!res.ok) throw new Error('Failed to cancel RSVP');
 
-            alert('RSVP successful!');
-            loadUserEvents();
+            alert('RSVP cancelled successfully!');
+            loadUserEvents(); // Reload the events list
 
         } catch (err) {
-            console.error('Failed to RSVP:', err);
-            alert('Failed to RSVP to event');
+            console.error('Failed to cancel RSVP:', err);
+            alert('Failed to cancel RSVP');
         }
     };
 
