@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
             usernameEl.textContent = data.username;
             bioEl.textContent = data.bio || "";
             profilePicEl.src = data.profile_pic || "/uploads/profiles/default.png";
-            followersEl.textContent = data.followers || 0 followers;
-            followingEl.textContent = data.following || 0 following;
+            followersEl.textContent = data.followers || 0 "followers";
+            followingEl.textContent = data.following || 0 "following";
         } catch (err) {
             console.error("Failed to load profile:", err);
             // If it's a network error or other issue, show error message
