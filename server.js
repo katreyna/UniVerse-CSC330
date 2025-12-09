@@ -63,7 +63,8 @@ app.get("/api/profile", async (req, res) => {
         const [rows] = await promisePool.query(
             `SELECT u.userID, u.username, u.email, u.bio, u.profile_pic,
                 (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
-                (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following
+                (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following,
+                (SELECT COUNT(*) FROM posts WHERE userID = u.userID) AS posts_count
              FROM users u
              WHERE u.userID = ?`,
             [req.session.userId]
@@ -77,7 +78,6 @@ app.get("/api/profile", async (req, res) => {
         res.status(500).json({ error: "Failed to load profile" });
     }
 });
-
 // update logged-in user's profile
 app.post("/api/profile/update", upload.single("profile_pic"), async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
