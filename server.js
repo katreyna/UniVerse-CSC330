@@ -410,14 +410,29 @@ app.post("/logout", (req, res) => {
 /* ======================================================
                     check session
 ====================================================== */
-app.get("/api/session", (req, res) => {
-  if (req.session.userId) {
+app.get("/api/session", async (req, res) => {
+  if (!req.session.userId) return res.json({ loggedIn: false });
+
+  try {
+    const [rows] = await promisePool.query(
+      "SELECT userID, username, profile_pic FROM users WHERE userID = ?",
+      [req.session.userId]
+    );
+
+    if (rows.length === 0) return res.json({ loggedIn: false });
+
+    const user = rows[0];
     res.json({
       loggedIn: true,
-      user: { id: req.session.userId, username: req.session.username }
+      user: {
+        id: user.userID,
+        username: user.username,
+        profile_pic: user.profile_pic || '/uploads/profiles/default.png'
+      }
     });
-  } else {
-    res.json({ loggedIn: false });
+  } catch (err) {
+    console.error("Session error:", err);
+    res.status(500).json({ loggedIn: false });
   }
 });
 
