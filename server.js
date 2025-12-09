@@ -422,9 +422,38 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Password Reset
+app.post("/reset-password", async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ success: false, message: "Missing email or new password." });
+  }
+
+  try {
+    // Hash the new password before saving
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password in the database
+    const [result] = await promisePool.query(
+      "UPDATE users SET password = ? WHERE email = ?",
+      [hashedPassword, email]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    return res.status(200).json({ success: true, message: "Password reset successful." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+});
+
+// logout endpoint
 /* ======================================================
                         logout
-====================================================== */
 app.post("/logout", (req, res) => {
   req.session.destroy();
   res.json({ success: true, message: "Logged out successfully" });
