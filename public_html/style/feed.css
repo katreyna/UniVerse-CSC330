@@ -253,6 +253,12 @@ nav {
   box-shadow: 0 4px 12px rgba(0, 114, 213, 0.3);
 }
 
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .cancel-btn {
   background: rgba(244, 67, 54, 0.1);
   color: #f44336;
@@ -386,8 +392,132 @@ nav {
   color: #e0245e;
 }
 
+.action-btn.liked i {
+  font-weight: 900;
+}
+
 .action-btn.liked:hover {
   background: rgba(224, 36, 94, 0.1);
+}
+
+/* Replies Section */
+.replies-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 114, 213, 0.1);
+}
+
+.reply {
+  background: rgba(0, 114, 213, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border-left: 3px solid #0072d5;
+}
+
+.reply-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.reply-username {
+  font-weight: 600;
+  color: #0072d5;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.reply-username:hover {
+  text-decoration: underline;
+}
+
+.reply-time {
+  color: #999;
+  font-size: 12px;
+}
+
+.reply-content {
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Reply Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+.modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 114, 213, 0.4);
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.close-modal:hover {
+  color: #0072d5;
+}
+
+.modal-content h3 {
+  color: #0072d5;
+  margin-bottom: 16px;
+}
+
+.replying-to {
+  background: rgba(0, 114, 213, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #666;
+  border-left: 3px solid #0072d5;
+}
+
+.modal-content textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(0, 114, 213, 0.3);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  resize: vertical;
+  min-height: 100px;
+  margin-bottom: 16px;
+}
+
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #0072d5;
+  box-shadow: 0 0 0 3px rgba(0, 114, 213, 0.1);
 }
 
 /* Loading States */
@@ -456,5 +586,9 @@ nav {
   .action-btn {
     padding: 6px 12px;
     font-size: 13px;
+  }
+
+  .modal-content {
+    padding: 20px;
   }
 }
