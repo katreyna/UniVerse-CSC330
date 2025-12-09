@@ -817,7 +817,7 @@ app.use((req, res) => {
   res.status(404).send("404 Not Found");
 });
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public_html', 'uploads')));
 
 
 /* ======================================================
