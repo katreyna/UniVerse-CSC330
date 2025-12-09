@@ -458,6 +458,35 @@ app.get("/api/posts", async (req, res) => {
   }
 });
 
+// get posts for a specific user
+app.get('/api/posts', async (req, res) => {
+  try {
+    const username = req.query.username; // optional query parameter
+
+    let query = `
+      SELECT p.postID AS id, p.userID AS userId, u.username, u.profile_pic,
+             p.content, p.created
+      FROM posts p
+      JOIN users u ON p.userID = u.userID
+    `;
+    const params = [];
+
+    if (username) {
+      query += ' WHERE u.username = ?';
+      params.push(username);
+    }
+
+    query += ' ORDER BY p.created DESC';
+
+    const [posts] = await promisePool.query(query, params);
+    res.json(posts);
+
+  } catch (err) {
+    console.error('Failed to fetch posts:', err);
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
 // Create a new post
 app.post("/api/posts", async (req, res) => {
   const userId = req.session.userId;
