@@ -9,12 +9,7 @@ async function getCurrentUser() {
 
     if (data.loggedIn) {
       currentUser = data.user;
-
-      const avatar = document.getElementById('currentUserAvatar');
-      if (avatar) {
-        avatar.src = data.user.profile_pic || '/uploads/profiles/default.png';
-        avatar.alt = currentUser.username;
-      }
+      updateAvatar(currentUser.profile_pic);
     } else {
       window.location.href = '/login.html';
     }
@@ -22,6 +17,12 @@ async function getCurrentUser() {
     console.error('Failed to get current user:', err);
     window.location.href = '/login.html';
   }
+}
+function updateAvatar(profilePic) {
+  const avatar = document.getElementById('currentUserAvatar');
+  if (!avatar) return;
+  avatar.src = (profilePic || '/uploads/profiles/default.png') + '?t=' + new Date().getTime();
+  avatar.alt = currentUser.username;
 }
 
 // Create post form toggle
@@ -128,7 +129,7 @@ async function createPostElement(post) {
   
   // Use profile picture or fallback to default
   const profilePic = post.profile_pic && post.profile_pic.trim() !== ""
-    ? post.profile_pic
+    ? post.profile_pic + '?t=' + new Date().getTime()
     : "/uploads/profiles/default.png";
 
   const avatarHTML = `
