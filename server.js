@@ -442,6 +442,10 @@ app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "login.html"));
 });
 
+app.get("/logout", (req, res) => {
+  res.sendFile(path.join(__dirname, "public_html", "index.html"));
+});
+
 app.get("/home", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "feed.html"));
 });
