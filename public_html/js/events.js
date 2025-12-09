@@ -26,6 +26,8 @@ const mockEvents = [
   }
 ];
 
+let currentUser = null;
+
 // Load events from database or fallback to mock data
 async function loadEvents() {
   const container = document.getElementById("events");
