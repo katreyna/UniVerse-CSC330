@@ -169,7 +169,7 @@ app.get("/api/users/:id", async (req, res) => {
     }
 });
 
-// get user profile by USERNAME (for pretty URLs like /user/kat123)
+// get user profile by username
 app.get("/api/users/username/:username", async (req, res) => {
     const username = req.params.username;
     const currentUserId = req.session.userId;
@@ -484,6 +484,141 @@ app.post("/api/posts", async (req, res) => {
   }
 });
 
+// Check if user liked a post
+app.get("/api/posts/:id/liked", async (req, res) => {
+  const postId = req.params.id;
+  const userId = req.session.userId;
+
+  if (!userId) return res.status(401).json({ liked: false });
+
+  try {
+    const [rows] = await promisePool.query(
+      "SELECT * FROM likes WHERE post_id = ? AND user_id = ?",
+      [postId, userId]
+    );
+
+    res.json({ liked: rows.length > 0 });
+  } catch (err) {
+    console.error("Check liked error:", err);
+    res.status(500).json({ liked: false });
+  }
+});
+
+// Get like count
+app.get("/api/posts/:id/likes", async (req, res) => {
+  const postId = req.params.id;
+
+  try {
+    const [rows] = await promisePool.query(
+      "SELECT COUNT(*) AS count FROM likes WHERE post_id = ?",
+      [postId]
+    );
+
+    res.json({ count: rows[0].count });
+  } catch (err) {
+    console.error("Get likes error:", err);
+    res.status(500).json({ count: 0 });
+  }
+});
+// Like a post
+app.post("/api/posts/:id/like", async (req, res) => {
+  const postId = req.params.id;
+  const userId = req.session.userId;
+
+  if (!userId) return res.status(401).json({ error: "Not logged in" });
+
+  try {
+    // Prevent double-like
+    const [existing] = await promisePool.query(
+      "SELECT * FROM likes WHERE post_id = ? AND user_id = ?",
+      [postId, userId]
+    );
+
+    if (existing.length > 0) return res.status(400).json({ error: "Already liked" });
+
+    await promisePool.query(
+      "INSERT INTO likes (post_id, user_id, created) VALUES (?, ?, NOW())",
+      [postId, userId]
+    );
+
+    const [count] = await promisePool.query(
+      "SELECT COUNT(*) AS count FROM likes WHERE post_id = ?",
+      [postId]
+    );
+
+    res.json({ success: true, likeCount: count[0].count });
+  } catch (err) {
+    console.error("Like error:", err);
+    res.status(500).json({ error: "Failed to like post" });
+  }
+});
+// Unlike a post
+app.post("/api/posts/:id/unlike", async (req, res) => {
+  const postId = req.params.id;
+  const userId = req.session.userId;
+
+  if (!userId) return res.status(401).json({ error: "Not logged in" });
+
+  try {
+    await promisePool.query(
+      "DELETE FROM likes WHERE post_id = ? AND user_id = ?",
+      [postId, userId]
+    );
+
+    const [count] = await promisePool.query(
+      "SELECT COUNT(*) AS count FROM likes WHERE post_id = ?",
+      [postId]
+    );
+
+    res.json({ success: true, likeCount: count[0].count });
+  } catch (err) {
+    console.error("Unlike error:", err);
+    res.status(500).json({ error: "Failed to unlike post" });
+  }
+});
+
+// Get replies
+app.get("/api/posts/:id/replies", async (req, res) => {
+  const postId = req.params.id;
+
+  try {
+    const [rows] = await promisePool.query(
+      `SELECT r.replyID AS id, r.content, r.created, u.username
+       FROM replies r
+       JOIN users u ON r.userID = u.userID
+       WHERE r.post_id = ?
+       ORDER BY r.created ASC`,
+      [postId]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Get replies error:", err);
+    res.status(500).json([]);
+  }
+});
+
+// Post a reply
+app.post("/api/posts/:id/reply", async (req, res) => {
+  const postId = req.params.id;
+  const userId = req.session.userId;
+  const { content } = req.body;
+
+  if (!userId) return res.status(401).json({ success: false, message: "Not logged in" });
+  if (!content || content.trim() === "") return res.status(400).json({ success: false, message: "Empty reply" });
+
+  try {
+    await promisePool.query(
+      "INSERT INTO replies (post_id, userID, content, created) VALUES (?, ?, ?, NOW())",
+      [postId, userId, content]
+    );
+
+    res.json({ success: true, message: "Reply posted!" });
+  } catch (err) {
+    console.error("Reply error:", err);
+    res.status(500).json({ success: false, message: "Failed to post reply" });
+  }
+});
 
 /* ======================================================
                         events
