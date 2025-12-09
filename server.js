@@ -205,17 +205,27 @@ app.get("/api/users/username/:username", async (req, res) => {
 // get user posts by user
 app.get("/api/users/:id/posts", async (req, res) => {
   const userId = req.params.id;
+  const currentUserId = req.session.userId; // Get the current logged-in user
 
   try {
     const [posts] = await promisePool.query(
       `SELECT p.postID AS id, p.userID AS userId, u.username, u.profile_pic,
-              p.content, p.created
+              p.content, p.created,
+              (SELECT COUNT(*) FROM likes WHERE postID = p.postID) AS like_count,
+              (SELECT COUNT(*) FROM replies WHERE postID = p.postID) AS reply_count,
+              EXISTS(SELECT 1 FROM likes WHERE postID = p.postID AND userID = ?) AS is_liked
        FROM posts p
        JOIN users u ON p.userID = u.userID
        WHERE u.userID = ?
        ORDER BY p.created DESC`,
-      [userId]
+      [currentUserId, userId]
     );
+
+    // Convert is_liked to boolean
+    posts.forEach(post => {
+      post.is_liked = Boolean(post.is_liked);
+      post.created_at = post.created; // Add created_at for consistency with feed
+    });
 
     res.json(posts);
   } catch (err) {
