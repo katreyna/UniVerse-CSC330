@@ -41,8 +41,7 @@ const promisePool = connection_pool.promise();
                         profile
 ====================================================== */
 
-
-// Multer storage config for profile pictures
+// multer storage config for profile pictures
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = path.join(__dirname, "public_html", "uploads", "profiles");
@@ -56,7 +55,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// GET logged-in user's profile
+// get logged-in user's profile
 app.get("/api/profile", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
 
@@ -114,7 +113,7 @@ app.post("/api/profile/update", upload.single("profile_pic"), async (req, res) =
     }
 });
 
-// get another user's profile by ID
+// get another user's profile by ID (legacy endpoint)
 app.get("/api/profile/:id", async (req, res) => {
     const profileId = req.params.id;
 
@@ -137,6 +136,187 @@ app.get("/api/profile/:id", async (req, res) => {
     }
 });
 
+// get user profile by ID (with follow status)
+app.get("/api/users/:id", async (req, res) => {
+    const profileId = req.params.id;
+    const currentUserId = req.session.userId;
+
+    if (!currentUserId) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    try {
+        const [rows] = await promisePool.query(
+            `SELECT u.userID, u.username, u.bio, u.profile_pic,
+                (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
+                (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following,
+                (SELECT COUNT(*) FROM posts WHERE userID = u.userID) AS posts_count,
+                EXISTS(SELECT 1 FROM follows WHERE followerID = ? AND followingID = u.userID) AS is_following
+             FROM users u
+             WHERE u.userID = ?`,
+            [currentUserId, profileId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        rows[0].is_following = Boolean(rows[0].is_following);
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Profile fetch error:", err);
+        res.status(500).json({ error: "Failed to fetch profile" });
+    }
+});
+
+// get user profile by USERNAME (for pretty URLs like /user/kat123)
+app.get("/api/users/username/:username", async (req, res) => {
+    const username = req.params.username;
+    const currentUserId = req.session.userId;
+
+    if (!currentUserId) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    try {
+        const [rows] = await promisePool.query(
+            `SELECT u.userID, u.username, u.bio, u.profile_pic,
+                (SELECT COUNT(*) FROM follows WHERE followingID = u.userID) AS followers,
+                (SELECT COUNT(*) FROM follows WHERE followerID = u.userID) AS following,
+                (SELECT COUNT(*) FROM posts WHERE userID = u.userID) AS posts_count,
+                EXISTS(SELECT 1 FROM follows WHERE followerID = ? AND followingID = u.userID) AS is_following
+             FROM users u
+             WHERE u.username = ?`,
+            [currentUserId, username]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        rows[0].is_following = Boolean(rows[0].is_following);
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Profile fetch error:", err);
+        res.status(500).json({ error: "Failed to fetch profile" });
+    }
+});
+
+// follow a user
+app.post("/api/users/:id/follow", async (req, res) => {
+    const targetUserId = req.params.id;
+    const currentUserId = req.session.userId;
+
+    if (!currentUserId) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    if (currentUserId == targetUserId) {
+        return res.status(400).json({ error: "Cannot follow yourself" });
+    }
+
+    try {
+        const [user] = await promisePool.query(
+            "SELECT userID FROM users WHERE userID = ?",
+            [targetUserId]
+        );
+
+        if (user.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const [existing] = await promisePool.query(
+            "SELECT * FROM follows WHERE followerID = ? AND followingID = ?",
+            [currentUserId, targetUserId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ error: "Already following this user" });
+        }
+
+        await promisePool.query(
+            "INSERT INTO follows (followerID, followingID, followed_at) VALUES (?, ?, NOW())",
+            [currentUserId, targetUserId]
+        );
+
+        res.json({ success: true, message: "Successfully followed user" });
+    } catch (err) {
+        console.error("Follow error:", err);
+        res.status(500).json({ error: "Failed to follow user" });
+    }
+});
+
+// unfollow a user
+app.post("/api/users/:id/unfollow", async (req, res) => {
+    const targetUserId = req.params.id;
+    const currentUserId = req.session.userId;
+
+    if (!currentUserId) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    try {
+        const [result] = await promisePool.query(
+            "DELETE FROM follows WHERE followerID = ? AND followingID = ?",
+            [currentUserId, targetUserId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ error: "Not following this user" });
+        }
+
+        res.json({ success: true, message: "Successfully unfollowed user" });
+    } catch (err) {
+        console.error("Unfollow error:", err);
+        res.status(500).json({ error: "Failed to unfollow user" });
+    }
+});
+
+// get a user's posts
+app.get("/api/users/:id/posts", async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const [posts] = await promisePool.query(
+            `SELECT p.postID as id, p.userID as userId, p.content, p.created,
+                    u.username, u.profile_pic
+             FROM posts p
+             JOIN users u ON p.userID = u.userID
+             WHERE p.userID = ?
+             ORDER BY p.created DESC`,
+            [userId]
+        );
+
+        res.json(posts);
+    } catch (err) {
+        console.error("Failed to fetch user posts:", err);
+        res.status(500).json({ error: "Failed to fetch posts" });
+    }
+});
+
+// get a user's events
+app.get("/api/users/:id/events", async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const [events] = await promisePool.query(
+            `SELECT e.eventID as id, e.title, e.event_time as date, 
+                    e.location, e.description,
+                    COUNT(r.id) as rsvp_count
+             FROM events e
+             LEFT JOIN rsvps r ON e.eventID = r.event_id
+             WHERE e.creator_id = ?
+             GROUP BY e.eventID, e.title, e.event_time, e.location, e.description
+             ORDER BY e.event_time ASC`,
+            [userId]
+        );
+
+        res.json(events);
+    } catch (err) {
+        console.error("Failed to fetch user events:", err);
+        res.status(500).json({ error: "Failed to fetch events" });
+    }
+});
 
 /* ======================================================
                         register
@@ -456,6 +636,10 @@ app.get("/events", (req, res) => {
 
 app.get("/profile", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "profile.html"));
+});
+
+app.get("/user/:username", (req, res) => {
+  res.sendFile(path.join(__dirname, "public_html", "other-profiles.html"));
 });
 
 // 404
