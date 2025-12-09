@@ -76,11 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (editPic.files && editPic.files[0]) formData.append("profile_pic", editPic.files[0]);
 
         try {
-            const res = await fetch("/api/profile", {
-                method: "PUT",
-                credentials: "include",
-                body: formData
+            const res = await fetch("/api/profile/update", {
+            method: "POST",
+            credentials: "include",
+            body: formData
+            
             });
+
             
             // Handle unauthorized during update
             if (res.status === 401) {
