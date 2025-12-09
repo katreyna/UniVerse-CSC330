@@ -442,57 +442,6 @@
             transform: translateY(-2px);
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            nav {
-                padding: 20px 30px;
-            }
-
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 40px 20px;
-            }
-
-            .profile-right {
-                width: 100%;
-            }
-
-            .profile-top {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .profile-stats {
-                justify-content: center;
-                gap: 20px;
-            }
-
-            .profile-content {
-                padding: 30px 15px 40px;
-            }
-
-            .profile-tabs {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .tab-button {
-                width: 100%;
-            }
-        }
 /* Feed-style posts */
 .feed {
     display: flex;
@@ -523,9 +472,9 @@
     margin-bottom: 15px;
 }
 
-.post-avatar {
-    width: 48px;
-    height: 48px;
+.post-avatar img {
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(0, 114, 213, 0.3);
@@ -601,22 +550,73 @@
     font-size: 14px;
 }
 
-@media (max-width: 768px) {
-    .post-card {
-        padding: 15px;
-    }
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .post-avatar {
-        width: 40px;
-        height: 40px;
-    }
+        /* Responsive */
+        @media (max-width: 768px) {
+            
+                .post-card {
+                    padding: 15px;
+                }
 
-    .post-actions {
-        gap: 15px;
-    }
+                .post-avatar {
+                    width: 40px;
+                    height: 40px;
+                }
 
-    .action-btn {
-        padding: 6px 10px;
-        font-size: 13px;
-    }
-}
+                .post-actions {
+                    gap: 15px;
+                }
+
+                .action-btn {
+                    padding: 6px 10px;
+                    font-size: 13px;
+                }
+            }
+            nav {
+                padding: 20px 30px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 40px 20px;
+            }
+
+            .profile-right {
+                width: 100%;
+            }
+
+            .profile-top {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .profile-stats {
+                justify-content: center;
+                gap: 20px;
+            }
+
+            .profile-content {
+                padding: 30px 15px 40px;
+            }
+
+            .profile-tabs {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tab-button {
+                width: 100%;
+            }
+        }
