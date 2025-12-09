@@ -623,7 +623,6 @@ app.post("/api/posts/:id/reply", async (req, res) => {
 /* ======================================================
                         events
 ====================================================== */
-
 // Get all events
 app.get("/api/events", async (req, res) => {
   const mockEvents = [
@@ -654,6 +653,55 @@ app.get("/api/events", async (req, res) => {
     res.json(mockEvents);
   }
 });
+// Create a new event (no userID column)
+app.post("/api/events", async (req, res) => {
+  try {
+    let { title, event_time, location, description } = req.body;
+
+    // Basic validation
+    if (!title || !event_time || !location) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+
+    title = title.trim();
+    location = location.trim();
+    description = (description || "").trim();
+
+    // Convert HTML datetime-local string -> MySQL DATETIME
+    // Example incoming: "2025-12-09T02:30"
+    let eventTimeDb = event_time;
+    if (eventTimeDb.includes("T") && eventTimeDb.length === 16) {
+      // "YYYY-MM-DDTHH:MM" -> "YYYY-MM-DD HH:MM:00"
+      eventTimeDb = eventTimeDb.replace("T", " ") + ":00";
+    }
+
+    const [result] = await promisePool.query(
+      `INSERT INTO events (title, event_time, location, description)
+       VALUES (?, ?, ?, ?)`,
+      [title, eventTimeDb, location, description]
+    );
+
+    return res.json({
+      success: true,
+      message: "Event created successfully",
+      event: {
+        id: result.insertId,
+        title,
+        event_time: eventTimeDb,
+        location,
+        description,
+      },
+    });
+  } catch (err) {
+    console.error("Create event error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error creating event" });
+  }
+});
+
 
 // Get single event
 app.get("/api/events/:id", async (req, res) => {
@@ -724,6 +772,35 @@ app.post("/api/events/:id/rsvp", async (req, res) => {
   }
 });
 
+// Delete an event (admin only)
+app.delete("/api/events/:id", async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const userId = req.session?.userID;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+
+    // Check if user is admin (you can modify this logic)
+    const [user] = await promisePool.query(
+      "SELECT role FROM users WHERE userID = ?",
+      [userId]
+    );
+
+    if (user.length === 0 || user[0].role !== 'admin') {
+      return res.status(403).json({ success: false, message: "Only admins can delete events" });
+    }
+
+    // Delete the event
+    await promisePool.query("DELETE FROM events WHERE eventID = ?", [eventId]);
+
+    res.json({ success: true, message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("Delete event error:", err);
+    res.status(500).json({ success: false, message: "Error deleting event" });
+  }
+});
 // Cancel RSVP
 app.delete("/api/events/:id/rsvp", async (req, res) => {
   try {
