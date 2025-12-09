@@ -1,4 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+    
     // Get the last part of the URL path
     const pathParts = window.location.pathname.split('/');
     const lastPart = pathParts[pathParts.length - 1];
