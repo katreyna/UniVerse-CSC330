@@ -194,7 +194,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Load user posts
-    async function loadUserPosts() {
+// Load user posts (styled like feed.js)
+async function loadUserPosts() {
     try {
         const res = await fetch(`/api/users/${window.currentProfileUserId}/posts`, { 
             credentials: 'include' 
@@ -208,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!postsList) return;
 
         if (posts.length === 0) {
-            postsList.innerHTML = '<p style="text-align:center; color:rgba(255,255,255,0.7); padding:20px;">No posts yet</p>';
+            postsList.innerHTML = '<p class="no-content">No posts yet</p>';
             if (postsCountEl) postsCountEl.textContent = '0 posts';
             return;
         }
@@ -221,10 +222,14 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const post of posts) {
             postCount++;
 
-            const createdAt = post.created_at ? getTimeAgo(new Date(post.created_at)) : 'Just now';
-            const likeCount = post.like_count || 0;
-            const replyCount = post.reply_count || 0;
-            const isLiked = post.is_liked ? 'liked' : '';
+            const createdAt = post.created_at ? getTimeAgo(new Date(post.created_at)) : 'just now';
+            const isLiked = post.is_liked ? true : false;
+
+            // Fetch replies (optional, you can skip for faster load)
+            const replies = post.replies || [];
+
+            const profilePic = post.profile_pic || '/uploads/profiles/default.png';
+            const username = post.username || 'User';
 
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
@@ -232,63 +237,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
             postDiv.innerHTML = `
                 <div class="post-header">
-                    <div class="user-avatar">
-                        <img src="${post.profile_pic || '/uploads/profiles/default.png'}" alt="${post.username}">
+                    <div class="user-avatar" onclick="viewProfile('${username}')">
+                        <img src="${profilePic}" alt="${username}">
                     </div>
                     <div class="post-info">
-                        <span class="username">${post.username || 'User'}</span>
-                        <span class="post-time">· ${createdAt}</span>
+                        <div class="post-user">
+                            <span class="username" onclick="viewProfile('${username}')">${username}</span>
+                            <span class="post-time">· ${createdAt}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="post-content">${post.content || ''}</div>
+                <div class="post-content">${escapeHtml(post.content)}</div>
                 <div class="post-actions">
-                    <button class="action-btn like-btn ${isLiked}" data-post-id="${post.id}">
-                        <i class="fa fa-heart"></i>
-                        <span class="like-count">${likeCount}</span>
+                    <button class="action-btn ${isLiked ? 'liked' : ''}" data-action="like">
+                        <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                        <span>${post.like_count || 'Like'}</span>
                     </button>
-                    <button class="action-btn reply-btn" data-post-id="${post.id}">
-                        <i class="fa fa-comment"></i>
-                        <span class="reply-count">${replyCount}</span>
+                    <button class="action-btn" data-action="reply">
+                        <i class="far fa-comment"></i>
+                        <span>${replies.length > 0 ? replies.length : 'Reply'}</span>
                     </button>
                 </div>
+                ${replies.length > 0 ? `
+                <div class="replies-section">
+                    ${replies.map(reply => `
+                    <div class="reply">
+                        <div class="reply-header">
+                            <span class="reply-username" onclick="viewProfile('${reply.username}')">${escapeHtml(reply.username)}</span>
+                            <span class="reply-time">· ${getTimeAgo(new Date(reply.created_at))}</span>
+                        </div>
+                        <div class="reply-content">${escapeHtml(reply.content)}</div>
+                    </div>
+                    `).join('')}
+                </div>
+                ` : ''}
             `;
 
             postsList.appendChild(postDiv);
+
+            // Add like/reply functionality
+            const likeBtn = postDiv.querySelector('[data-action="like"]');
+            const replyBtn = postDiv.querySelector('[data-action="reply"]');
+
+            likeBtn.addEventListener('click', () => toggleLike(post.id, likeBtn));
+            replyBtn.addEventListener('click', () => openReplyModal(post));
         }
 
-        // Update posts count dynamically
+        // Update posts count
         if (postsCountEl) postsCountEl.textContent = `${postCount} posts`;
-
-        // Add event listeners
-        attachPostEventListeners();
 
     } catch (err) {
         console.error('Failed to load posts:', err);
-        if (postsList) postsList.innerHTML = '<p>Failed to load posts.</p>';
+        const postsList = document.getElementById('posts-list');
+        if (postsList) postsList.innerHTML = '<p class="loading">Failed to load posts.</p>';
     }
 }
 
-// Attach like and reply button listeners
-function attachPostEventListeners() {
-    document.querySelectorAll('.like-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const postId = btn.dataset.postId;
-            const isLiked = btn.classList.contains('liked');
-            try {
-                const endpoint = isLiked ? `/api/posts/${postId}/unlike` : `/api/posts/${postId}/like`;
-                const res = await fetch(endpoint, { method: 'POST', credentials: 'include' });
-                if (!res.ok) return;
-                const data = await res.json();
-                btn.classList.toggle('liked');
-                btn.querySelector('.like-count').textContent = data.like_count || 0;
-            } catch (err) {
-                console.error(err);
-            }
-        });
-    });
 
-    document.querySelectorAll('.reply-btn').forEach(btn => {
+document.querySelectorAll('.reply-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const postId = btn.dataset.postId;
