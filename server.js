@@ -216,30 +216,41 @@ app.post("/api/users/:id/follow", async (req, res) => {
     }
 
     try {
+        // Check if user exists
         const [user] = await promisePool.query(
             "SELECT userID FROM users WHERE userID = ?",
             [targetUserId]
         );
-
         if (user.length === 0) {
             return res.status(404).json({ error: "User not found" });
         }
 
+        // Check if already following
         const [existing] = await promisePool.query(
             "SELECT * FROM follows WHERE followerID = ? AND followingID = ?",
             [currentUserId, targetUserId]
         );
-
         if (existing.length > 0) {
             return res.status(400).json({ error: "Already following this user" });
         }
 
+        // Insert into follows (fixed column name)
         await promisePool.query(
-            "INSERT INTO follows (followerID, followingID, followed_at) VALUES (?, ?, NOW())",
+            "INSERT INTO follows (followerID, followingID) VALUES (?, ?)",
             [currentUserId, targetUserId]
         );
 
-        res.json({ success: true, message: "Successfully followed user" });
+        // Get updated followers count
+        const [countRows] = await promisePool.query(
+            "SELECT COUNT(*) AS followers FROM follows WHERE followingID = ?",
+            [targetUserId]
+        );
+
+        res.json({
+            success: true,
+            message: "Successfully followed user",
+            followers: countRows[0].followers
+        });
     } catch (err) {
         console.error("Follow error:", err);
         res.status(500).json({ error: "Failed to follow user" });
@@ -265,32 +276,20 @@ app.post("/api/users/:id/unfollow", async (req, res) => {
             return res.status(400).json({ error: "Not following this user" });
         }
 
-        res.json({ success: true, message: "Successfully unfollowed user" });
+        // Get updated followers count
+        const [countRows] = await promisePool.query(
+            "SELECT COUNT(*) AS followers FROM follows WHERE followingID = ?",
+            [targetUserId]
+        );
+
+        res.json({
+            success: true,
+            message: "Successfully unfollowed user",
+            followers: countRows[0].followers
+        });
     } catch (err) {
         console.error("Unfollow error:", err);
         res.status(500).json({ error: "Failed to unfollow user" });
-    }
-});
-
-// get a user's posts
-app.get("/api/users/:id/posts", async (req, res) => {
-    const userId = req.params.id;
-
-    try {
-        const [posts] = await promisePool.query(
-            `SELECT p.postID as id, p.userID as userId, p.content, p.created,
-                    u.username, u.profile_pic
-             FROM posts p
-             JOIN users u ON p.userID = u.userID
-             WHERE p.userID = ?
-             ORDER BY p.created DESC`,
-            [userId]
-        );
-
-        res.json(posts);
-    } catch (err) {
-        console.error("Failed to fetch user posts:", err);
-        res.status(500).json({ error: "Failed to fetch posts" });
     }
 });
 
