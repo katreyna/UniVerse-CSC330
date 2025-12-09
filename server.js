@@ -304,7 +304,7 @@ app.get("/api/users/:id/events", async (req, res) => {
                     COUNT(r.id) as rsvp_count
              FROM events e
              LEFT JOIN rsvps r ON e.eventID = r.event_id
-             WHERE e.creator_id = ?
+             WHERE e.userID = ?
              GROUP BY e.eventID, e.title, e.event_time, e.location, e.description
              ORDER BY e.event_time ASC`,
             [userId]
