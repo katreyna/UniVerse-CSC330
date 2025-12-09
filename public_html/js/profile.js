@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Load user posts (for other profiles)
+    // Load user posts (feed-style format)
     async function loadUserPosts() {
         try {
             const res = await fetch(`/api/users/${window.currentProfileUserId}/posts`, { 
@@ -212,17 +212,93 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            postsList.innerHTML = posts.map(post => `
-                <div class="card">
-                    <div class="card-badge">Post</div>
-                    <h2>${post.title || 'Untitled'}</h2>
-                    <div class="card-description">${post.content || ''}</div>
-                </div>
-            `).join('');
+            // Change the container class to feed-style
+            postsList.className = 'feed';
+
+            // Format posts like the feed
+            postsList.innerHTML = posts.map(post => {
+                const createdAt = post.created_at ? new Date(post.created_at).toLocaleString() : 'Just now';
+                const likeCount = post.like_count || 0;
+                const replyCount = post.reply_count || 0;
+                const isLiked = post.is_liked ? 'liked' : '';
+                
+                return `
+                    <div class="post-card" data-post-id="${post.id}">
+                        <div class="post-header">
+                            <img src="${post.profile_pic || '/uploads/profiles/default.png'}" class="post-avatar" alt="${post.username}">
+                            <div class="post-user-info">
+                                <span class="post-username">${post.username || 'User'}</span>
+                                <span class="post-time">${createdAt}</span>
+                            </div>
+                        </div>
+                        <div class="post-content">${post.content || ''}</div>
+                        <div class="post-actions">
+                            <button class="action-btn like-btn ${isLiked}" data-post-id="${post.id}">
+                                <i class="fa fa-heart"></i>
+                                <span class="like-count">${likeCount}</span>
+                            </button>
+                            <button class="action-btn reply-btn" data-post-id="${post.id}">
+                                <i class="fa fa-comment"></i>
+                                <span class="reply-count">${replyCount}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners for like and reply buttons
+            attachPostEventListeners();
 
         } catch (err) {
             console.error('Failed to load posts:', err);
         }
+    }
+
+    // Attach event listeners to post action buttons
+    function attachPostEventListeners() {
+        // Like buttons
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const postId = btn.dataset.postId;
+                const isLiked = btn.classList.contains('liked');
+                
+                try {
+                    const endpoint = isLiked ? `/api/posts/${postId}/unlike` : `/api/posts/${postId}/like`;
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+
+                    if (res.status === 401) {
+                        window.location.href = '/login.html';
+                        return;
+                    }
+
+                    if (!res.ok) throw new Error('Failed to update like');
+
+                    const data = await res.json();
+                    
+                    // Update UI
+                    btn.classList.toggle('liked');
+                    const likeCountEl = btn.querySelector('.like-count');
+                    likeCountEl.textContent = data.like_count || 0;
+
+                } catch (err) {
+                    console.error('Failed to update like:', err);
+                }
+            });
+        });
+
+        // Reply buttons
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const postId = btn.dataset.postId;
+                // You can implement reply modal here if needed
+                alert('Reply functionality - Post ID: ' + postId);
+            });
+        });
     }
 
     // Load user events (for other profiles)
