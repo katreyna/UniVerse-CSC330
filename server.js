@@ -493,7 +493,7 @@ app.get("/api/posts/:id/liked", async (req, res) => {
 
   try {
     const [rows] = await promisePool.query(
-      "SELECT * FROM likes WHERE post_id = ? AND user_id = ?",
+      "SELECT * FROM likes WHERE postID = ? AND userID = ?",
       [postId, userId]
     );
 
@@ -510,7 +510,7 @@ app.get("/api/posts/:id/likes", async (req, res) => {
 
   try {
     const [rows] = await promisePool.query(
-      "SELECT COUNT(*) AS count FROM likes WHERE post_id = ?",
+      "SELECT COUNT(*) AS count FROM likes WHERE postID = ?",
       [postId]
     );
 
@@ -530,19 +530,19 @@ app.post("/api/posts/:id/like", async (req, res) => {
   try {
     // Prevent double-like
     const [existing] = await promisePool.query(
-      "SELECT * FROM likes WHERE post_id = ? AND user_id = ?",
+      "SELECT * FROM likes WHERE postID = ? AND userID = ?",
       [postId, userId]
     );
 
     if (existing.length > 0) return res.status(400).json({ error: "Already liked" });
 
     await promisePool.query(
-      "INSERT INTO likes (post_id, user_id, created) VALUES (?, ?, NOW())",
+      "INSERT INTO likes (postID, userID, created) VALUES (?, ?, NOW())",
       [postId, userId]
     );
 
     const [count] = await promisePool.query(
-      "SELECT COUNT(*) AS count FROM likes WHERE post_id = ?",
+      "SELECT COUNT(*) AS count FROM likes WHERE postID = ?",
       [postId]
     );
 
@@ -561,12 +561,12 @@ app.post("/api/posts/:id/unlike", async (req, res) => {
 
   try {
     await promisePool.query(
-      "DELETE FROM likes WHERE post_id = ? AND user_id = ?",
+      "DELETE FROM likes WHERE postID = ? AND userID = ?",
       [postId, userId]
     );
 
     const [count] = await promisePool.query(
-      "SELECT COUNT(*) AS count FROM likes WHERE post_id = ?",
+      "SELECT COUNT(*) AS count FROM likes WHERE postID = ?",
       [postId]
     );
 
@@ -586,7 +586,7 @@ app.get("/api/posts/:id/replies", async (req, res) => {
       `SELECT r.replyID AS id, r.content, r.created, u.username
        FROM replies r
        JOIN users u ON r.userID = u.userID
-       WHERE r.post_id = ?
+       WHERE r.postID = ?
        ORDER BY r.created ASC`,
       [postId]
     );
@@ -609,7 +609,7 @@ app.post("/api/posts/:id/reply", async (req, res) => {
 
   try {
     await promisePool.query(
-      "INSERT INTO replies (post_id, userID, content, created) VALUES (?, ?, ?, NOW())",
+      "INSERT INTO replies (postID, userID, content, created) VALUES (?, ?, ?, NOW())",
       [postId, userId, content]
     );
 
