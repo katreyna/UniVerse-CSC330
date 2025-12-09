@@ -124,19 +124,28 @@ async function createPostElement(post) {
   postDiv.dataset.postId = post.id || post.postID;
 
   const timeAgo = getTimeAgo(new Date(post.created));
-  const userInitial = post.username ? post.username.charAt(0).toUpperCase() : 'U';
   const username = post.username || 'Unknown User';
   
+  // Use profile picture or fallback to default
+  const profilePic = post.profile_pic && post.profile_pic.trim() !== ""
+    ? post.profile_pic
+    : "/uploads/profiles/default.png";
+
+  const avatarHTML = `
+    <div class="user-avatar" onclick="viewProfile('${username}')">
+      <img src="${profilePic}" alt="${username}">
+    </div>
+  `;
+
   // Check if user liked this post
   const isLiked = await checkIfLiked(post.id || post.postID);
   const likeCount = await getLikeCount(post.id || post.postID);
   
   // Get replies
   const replies = await getReplies(post.id || post.postID);
-
   postDiv.innerHTML = `
     <div class="post-header">
-      <div class="user-avatar" onclick="viewProfile('${username}')">${userInitial}</div>
+      ${avatarHTML}
       <div class="post-info">
         <div class="post-user">
           <span class="username" onclick="viewProfile('${username}')">${escapeHtml(username)}</span>
@@ -169,6 +178,16 @@ async function createPostElement(post) {
       </div>
     ` : ''}
   `;
+
+  // Add event listeners
+  const likeBtn = postDiv.querySelector('[data-action="like"]');
+  const replyBtn = postDiv.querySelector('[data-action="reply"]');
+
+  likeBtn.addEventListener('click', () => toggleLike(post.id || post.postID, likeBtn));
+  replyBtn.addEventListener('click', () => openReplyModal(post));
+
+  return postDiv;
+}
 
   // Add event listeners
   const likeBtn = postDiv.querySelector('[data-action="like"]');
