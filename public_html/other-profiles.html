@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style/other-profiles.css"> 	
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <nav id="profile-nav">
+        <div id="logo"><b>UniVerse</b></div>
+        <div id="nav-buttons">
+            <a class="nav-link" href="/home.html">Home</a>
+            <a class="nav-link" href="/profile.html">My Profile</a>
+            <a class="nav-link" href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div id="loading" class="loading">Loading profile...</div>
+
+    <section class="profile-header" id="profile-header" style="display: none;">
+        <div class="profile-left">
+            <img id="profile-pic" class="pfp-large" src="/uploads/profiles/default.png" alt="Profile Picture">
+        </div>
+        <div class="profile-right">
+            <div class="profile-top">
+                <h2 id="username">Username</h2>
+                <button id="action-button" class="action-button">Follow</button>
+            </div>
+            <div class="profile-stats">
+                <span><span id="posts-count">0</span> posts</span>
+                <span><span id="followers-count">0</span> followers</span>
+                <span><span id="following-count">0</span> following</span>
+            </div>
+            <p id="bio"></p>
+        </div>
+    </section>
+
+    <div class="profile-content" id="profile-content" style="display: none;">
+        <div class="profile-tabs">
+            <button class="tab-button active" data-tab="posts-tab">Posts</button>
+            <button class="tab-button" data-tab="events-tab">Events</button>
+        </div>
+
+        <div id="posts-tab" class="tab-content active">
+            <div class="card-list" id="posts-list">
+                <p style="text-align: center; color: rgba(255,255,255,0.7); padding: 20px;">No posts yet</p>
+            </div>
+        </div>
+
+        <div id="events-tab" class="tab-content">
+            <div class="card-list" id="events-list">
+                <p style="text-align: center; color: rgba(255,255,255,0.7); padding: 20px;">No events yet</p>
+            </div>
+        </div>
+    </div>
+    <script src="/js/profile.js"></script>
+</body>
+</html>
