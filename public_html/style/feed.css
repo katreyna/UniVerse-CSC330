@@ -17,6 +17,14 @@ body {
   background: linear-gradient(to bottom, #0072d5 0%, #4da3ff 50%, #b3d9ff 100%);
 }
 
+/* small icon for posts */
+.user-avatar-small img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 /* Animated background shapes */
 .bg-shapes {
   position: fixed;
