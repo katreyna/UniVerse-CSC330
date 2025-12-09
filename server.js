@@ -328,14 +328,34 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ success: false, message: "Empty fields" });
     }
 
+    // Check if username/email already exists
+    const [existing] = await promisePool.query(
+      "SELECT userID FROM users WHERE username = ? OR email = ?",
+      [username, email]
+    );
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, message: "Username or email already taken" });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     
-    await promisePool.query(
+    const [result] = await promisePool.query(
       "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
       [username, email, hashed]
     );
-    
-    res.json({ success: true, message: "User registration complete!" });
+
+    const userId = result.insertId;
+
+    // Automatically log in the user by creating session
+    req.session.userId = userId;
+    req.session.username = username;
+
+    res.json({
+      success: true,
+      message: "User registration complete and logged in!",
+      user: { id: userId, username }
+    });
+
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ success: false, message: "Registration failed" });
