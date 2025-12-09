@@ -189,16 +189,6 @@ async function createPostElement(post) {
   return postDiv;
 }
 
-  // Add event listeners
-  const likeBtn = postDiv.querySelector('[data-action="like"]');
-  const replyBtn = postDiv.querySelector('[data-action="reply"]');
-
-  likeBtn.addEventListener('click', () => toggleLike(post.id || post.postID, likeBtn));
-  replyBtn.addEventListener('click', () => openReplyModal(post));
-
-  return postDiv;
-}
-
 // Like functionality
 async function toggleLike(postId, btn) {
   try {
