@@ -12,8 +12,8 @@ async function getCurrentUser() {
 
       const avatar = document.getElementById('currentUserAvatar');
       if (avatar) {
-        const profilePic = data.user.profile_pic || '/uploads/profiles/default.png';
-        avatar.innerHTML = `<img src="${profilePic}" alt="${currentUser.username}" />`;
+        avatar.src = data.user.profile_pic || '/uploads/profiles/default.png';
+        avatar.alt = currentUser.username;
       }
     } else {
       window.location.href = '/login.html';
