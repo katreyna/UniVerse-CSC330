@@ -193,113 +193,110 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Load user posts (feed-style format)
+    // Load user posts
     async function loadUserPosts() {
-        try {
-            const res = await fetch(`/api/users/${window.currentProfileUserId}/posts`, { 
-                credentials: 'include' 
-            });
+    try {
+        const res = await fetch(`/api/users/${window.currentProfileUserId}/posts`, { 
+            credentials: 'include' 
+        });
 
-            if (!res.ok) return;
+        if (!res.ok) return;
 
-            const posts = await res.json();
-            const postsList = document.getElementById('posts-list');
+        const posts = await res.json();
+        const postsList = document.getElementById('posts-list');
 
-            if (!postsList) return;
+        if (!postsList) return;
 
-            if (posts.length === 0) {
-                postsList.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.7); padding: 20px;">No posts yet</p>';
-                return;
-            }
-
-            // Change the container class to feed-style
-            postsList.className = 'feed';
-
-            // Format posts like the feed
-            postsList.innerHTML = posts.map(post => {
-                const createdAt = post.created_at ? new Date(post.created_at).toLocaleString() : 'Just now';
-                const likeCount = post.like_count || 0;
-                const replyCount = post.reply_count || 0;
-                const isLiked = post.is_liked ? 'liked' : '';
-                
-                return `
-                    <div class="post-card" data-post-id="${post.id}">
-                        <div class="post-header">
-                            <img src="${post.profile_pic || '/uploads/profiles/default.png'}" class="post-avatar" alt="${post.username}">
-                            <div class="post-user-info">
-                                <span class="post-username">${post.username || 'User'}</span>
-                                <span class="post-time">${createdAt}</span>
-                            </div>
-                        </div>
-                        <div class="post-content">${post.content || ''}</div>
-                        <div class="post-actions">
-                            <button class="action-btn like-btn ${isLiked}" data-post-id="${post.id}">
-                                <i class="fa fa-heart"></i>
-                                <span class="like-count">${likeCount}</span>
-                            </button>
-                            <button class="action-btn reply-btn" data-post-id="${post.id}">
-                                <i class="fa fa-comment"></i>
-                                <span class="reply-count">${replyCount}</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Add event listeners for like and reply buttons
-            attachPostEventListeners();
-
-        } catch (err) {
-            console.error('Failed to load posts:', err);
+        if (posts.length === 0) {
+            postsList.innerHTML = '<p style="text-align:center; color:rgba(255,255,255,0.7); padding:20px;">No posts yet</p>';
+            if (postsCountEl) postsCountEl.textContent = '0 posts';
+            return;
         }
+
+        postsList.className = 'feed';
+        postsList.innerHTML = '';
+
+        let postCount = 0;
+
+        for (const post of posts) {
+            postCount++;
+
+            const createdAt = post.created_at ? getTimeAgo(new Date(post.created_at)) : 'Just now';
+            const likeCount = post.like_count || 0;
+            const replyCount = post.reply_count || 0;
+            const isLiked = post.is_liked ? 'liked' : '';
+
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post';
+            postDiv.dataset.postId = post.id;
+
+            postDiv.innerHTML = `
+                <div class="post-header">
+                    <div class="user-avatar">
+                        <img src="${post.profile_pic || '/uploads/profiles/default.png'}" alt="${post.username}">
+                    </div>
+                    <div class="post-info">
+                        <span class="username">${post.username || 'User'}</span>
+                        <span class="post-time">· ${createdAt}</span>
+                    </div>
+                </div>
+                <div class="post-content">${post.content || ''}</div>
+                <div class="post-actions">
+                    <button class="action-btn like-btn ${isLiked}" data-post-id="${post.id}">
+                        <i class="fa fa-heart"></i>
+                        <span class="like-count">${likeCount}</span>
+                    </button>
+                    <button class="action-btn reply-btn" data-post-id="${post.id}">
+                        <i class="fa fa-comment"></i>
+                        <span class="reply-count">${replyCount}</span>
+                    </button>
+                </div>
+            `;
+
+            postsList.appendChild(postDiv);
+        }
+
+        // Update posts count dynamically
+        if (postsCountEl) postsCountEl.textContent = `${postCount} posts`;
+
+        // Add event listeners
+        attachPostEventListeners();
+
+    } catch (err) {
+        console.error('Failed to load posts:', err);
+        if (postsList) postsList.innerHTML = '<p>Failed to load posts.</p>';
     }
+}
 
-    // Attach event listeners to post action buttons
-    function attachPostEventListeners() {
-        // Like buttons
-        document.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const postId = btn.dataset.postId;
-                const isLiked = btn.classList.contains('liked');
-                
-                try {
-                    const endpoint = isLiked ? `/api/posts/${postId}/unlike` : `/api/posts/${postId}/like`;
-                    const res = await fetch(endpoint, {
-                        method: 'POST',
-                        credentials: 'include'
-                    });
-
-                    if (res.status === 401) {
-                        window.location.href = '/login.html';
-                        return;
-                    }
-
-                    if (!res.ok) throw new Error('Failed to update like');
-
-                    const data = await res.json();
-                    
-                    // Update UI
-                    btn.classList.toggle('liked');
-                    const likeCountEl = btn.querySelector('.like-count');
-                    likeCountEl.textContent = data.like_count || 0;
-
-                } catch (err) {
-                    console.error('Failed to update like:', err);
-                }
-            });
+// Attach like and reply button listeners
+function attachPostEventListeners() {
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const postId = btn.dataset.postId;
+            const isLiked = btn.classList.contains('liked');
+            try {
+                const endpoint = isLiked ? `/api/posts/${postId}/unlike` : `/api/posts/${postId}/like`;
+                const res = await fetch(endpoint, { method: 'POST', credentials: 'include' });
+                if (!res.ok) return;
+                const data = await res.json();
+                btn.classList.toggle('liked');
+                btn.querySelector('.like-count').textContent = data.like_count || 0;
+            } catch (err) {
+                console.error(err);
+            }
         });
+    });
 
-        // Reply buttons
-        document.querySelectorAll('.reply-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const postId = btn.dataset.postId;
-                // You can implement reply modal here if needed
-                alert('Reply functionality - Post ID: ' + postId);
-            });
+    document.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const postId = btn.dataset.postId;
+            // Here you can open a reply modal if desired
+            alert('Reply functionality - Post ID: ' + postId);
         });
-    }
+    });
+}
 
     // Load user events (for other profiles)
     async function loadUserEvents() {
