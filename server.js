@@ -202,6 +202,29 @@ app.get("/api/users/username/:username", async (req, res) => {
     }
 });
 
+// get user posts by user
+app.get("/api/users/:id/posts", async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const [posts] = await promisePool.query(
+      `SELECT p.postID AS id, p.userID AS userId, u.username, u.profile_pic,
+              p.content, p.created
+       FROM posts p
+       JOIN users u ON p.userID = u.userID
+       WHERE u.userID = ?
+       ORDER BY p.created DESC`,
+      [userId]
+    );
+
+    res.json(posts);
+  } catch (err) {
+    console.error('Failed to fetch user posts:', err);
+    res.status(500).json({ error: 'Failed to fetch user posts' });
+  }
+});
+
+
 // follow a user
 app.post("/api/users/:id/follow", async (req, res) => {
     const targetUserId = req.params.id;
@@ -382,13 +405,13 @@ app.post("/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     
     if (match) {
-      req.session.userId = user.userID;   // FIXED
+      req.session.userId = user.userID;
       req.session.username = user.username;
 
       res.json({
         success: true,
         message: "Welcome back!",
-        user: { id: user.userID, username: user.username } // FIXED
+        user: { id: user.userID, username: user.username }
       });
     } else {
       res.status(401).json({ success: false, message: "Wrong Password!" });
