@@ -14,12 +14,14 @@
     <div class="shape"></div>
     <div class="shape"></div>
   </div>
+
   <!-- Navigation -->
   <nav>
     <div id="logo"><b>UniVerse</b></div>
     <div id="nav-buttons">
-      <button class="nav-link"><a href="/home">Home</a></button>
-      <button class="nav-link"><a href="/events">Events</a></button>
+      <button class="nav-link"><a href="/">Home</a></button>
+      <button class="nav-link"><a href="feed.html">Feed</a></button>
+      <button class="nav-link"><a href="events.html">Events</a></button>
       <button class="nav-link"><a href="/profile">My Profile</a></button>
       <button class="signout"><a href="/logout"><i class="fa fa-sign-out"></i> Sign Out</a></button>
     </div>
@@ -49,6 +51,17 @@
     <!-- Feed -->
     <div id="feed" class="feed">
       <p class="loading">Loading posts...</p>
+    </div>
+  </div>
+
+  <!-- Reply Modal -->
+  <div id="replyModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Reply to post</h3>
+      <div id="replyingTo" class="replying-to"></div>
+      <textarea id="replyContent" placeholder="Write your reply..."></textarea>
+      <button id="submitReply" class="submit-btn">Reply</button>
     </div>
   </div>
 
