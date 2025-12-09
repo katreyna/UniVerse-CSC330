@@ -2,7 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get the last part of the URL path
     const pathParts = window.location.pathname.split('/');
     const lastPart = pathParts[pathParts.length - 1];
-
+    
+    // Determine if this is the current user's own profile
+    // Own profile if: empty, 'profile', 'profile.html', or ends with .html
     const isOwnProfile = !lastPart || 
                          lastPart === 'profile' || 
                          lastPart === 'profile.html' || 
@@ -118,6 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isOwnProfile) {
                 followersEl.textContent = `${data.followers || 0} followers`;
                 followingEl.textContent = `${data.following || 0} following`;
+                // Update posts count if element exists
+                if (postsCountEl) postsCountEl.textContent = data.posts_count || 0;
             } else {
                 followersEl.textContent = data.followers || 0;
                 followingEl.textContent = data.following || 0;
@@ -131,11 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (profileHeader) profileHeader.style.display = 'flex';
             if (profileContent) profileContent.style.display = 'block';
 
-            // Load posts and events for other profiles
-            if (!isOwnProfile) {
-                loadUserPosts();
-                loadUserEvents();
+            // Load posts and events for all profiles (own and others)
+            if (isOwnProfile) {
+                // For own profile, use the user ID from the profile data
+                window.currentProfileUserId = data.userID;
             }
+            loadUserPosts();
+            loadUserEvents();
 
         } catch (err) {
             console.error('Failed to load profile:', err);
