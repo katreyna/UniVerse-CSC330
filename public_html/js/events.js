@@ -24,7 +24,7 @@ const mockEvents = [
     description: "Featuring local bands and student performers!",
     rsvp_count: 0
   }
-}
+];
 
 // Load events from database or fallback to mock data
 async function loadEvents() {
