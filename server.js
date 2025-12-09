@@ -583,7 +583,8 @@ app.get("/api/posts/:id/replies", async (req, res) => {
 
   try {
     const [rows] = await promisePool.query(
-      `SELECT r.replyID AS id, r.content, r.created, u.username
+      `SELECT r.replyID AS id, r.content, r.created,
+       u.username, u.profile_pic
        FROM replies r
        JOIN users u ON r.userID = u.userID
        WHERE r.postID = ?
