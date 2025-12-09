@@ -236,6 +236,7 @@ function escapeHtml(text) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  await loadCurrentUser();
   loadEvents();
   
   const createEventBtn = document.getElementById("createEventBtn");
