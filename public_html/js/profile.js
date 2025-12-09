@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             usernameEl.textContent = data.username;
             bioEl.textContent = data.bio || "";
-            profilePicEl.src = data.profile_pic || "/images/default-profile.png";
+            profilePicEl.src = data.profile_pic || "/uploads/profiles/default.png";
             followersEl.textContent = data.followers || 0;
             followingEl.textContent = data.following || 0;
         } catch (err) {
