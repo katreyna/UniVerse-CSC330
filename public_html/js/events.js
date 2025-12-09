@@ -24,7 +24,7 @@ const mockEvents = [
     description: "Featuring local bands and student performers!",
     rsvp_count: 0
   }
-}
+];
 
 // Load events from database or fallback to mock data
 async function loadEvents() {
@@ -32,7 +32,6 @@ async function loadEvents() {
   container.innerHTML = '<p class="loading">Loading events...</p>';
 
   try {
-    // Try to fetch from database
     const response = await fetch("/api/events");
     
     if (!response.ok) {
@@ -40,12 +39,9 @@ async function loadEvents() {
     }
 
     const events = await response.json();
-    
-    // Server already has mock data fallback, so just display what we get
     console.log("✅ Loaded events:", events.length);
     displayEvents(events);
   } catch (error) {
-    // If fetch fails completely, use local mock data
     console.log("⚠️ Using local mock data:", error);
     displayEvents(mockEvents);
   }
@@ -89,18 +85,19 @@ function createEventCard(event) {
       <i class="fa fa-map-marker"></i> ${escapeHtml(event.location)}
     </p>
     <p class="card-description">${escapeHtml(event.description)}</p>
-    ${event.rsvp_count !== undefined ? `<p class="card-meta"><i class="fa fa-users"></i> ${event.rsvp_count} attending</p>` : ''}
+    <p class="card-meta rsvp-count"><i class="fa fa-users"></i> ${event.rsvp_count || 0} ${event.rsvp_count === 1 ? 'person' : 'people'} going</p>
+    <button class="rsvp-btn" data-rsvped="false">RSVP</button>
   `;
   
-  // Add RSVP button click handler
   const rsvpBtn = card.querySelector('.rsvp-btn');
-  rsvpBtn.addEventListener('click', () => handleRSVP(event.id, rsvpBtn));
+  if (rsvpBtn) {
+    rsvpBtn.addEventListener('click', () => handleRSVP(event.id, rsvpBtn));
+  }
   
   return card;
 }
 
 async function handleRSVP(eventId, button) {
-  // Check if user is logged in
   if (!currentUser) {
     alert('Please log in to RSVP to events');
     window.location.href = '/login';
@@ -109,7 +106,6 @@ async function handleRSVP(eventId, button) {
   
   const isRsvped = button.dataset.rsvped === 'true';
   
-  // If already RSVP'd, cancel the RSVP
   if (isRsvped) {
     if (!confirm('Do you want to cancel your RSVP?')) {
       return;
@@ -118,7 +114,6 @@ async function handleRSVP(eventId, button) {
     return;
   }
   
-  // Disable button while processing
   button.disabled = true;
   const originalText = button.textContent;
   button.textContent = 'Processing...';
@@ -135,19 +130,16 @@ async function handleRSVP(eventId, button) {
     const data = await response.json();
     
     if (data.success) {
-      // Update button
       button.textContent = '✓ RSVP\'d';
       button.classList.add('rsvped');
       button.dataset.rsvped = 'true';
       button.disabled = false;
       
-      // Update count
       const countElement = button.parentElement.querySelector('.rsvp-count');
       const count = data.rsvp_count;
       const countText = count === 1 ? '1 person going' : `${count} people going`;
       countElement.innerHTML = `<i class="fa fa-users"></i> ${countText}`;
       
-      // Show success message
       showNotification('RSVP successful!', 'success');
     } else {
       alert(data.message || 'RSVP failed');
@@ -179,19 +171,16 @@ async function cancelRSVP(eventId, button) {
     const data = await response.json();
     
     if (data.success) {
-      // Update button
       button.textContent = 'RSVP';
       button.classList.remove('rsvped');
       button.dataset.rsvped = 'false';
       button.disabled = false;
       
-      // Update count
       const countElement = button.parentElement.querySelector('.rsvp-count');
       const count = data.rsvp_count;
       const countText = count === 1 ? '1 person going' : `${count} people going`;
       countElement.innerHTML = `<i class="fa fa-users"></i> ${countText}`;
       
-      // Show success message
       showNotification('RSVP cancelled', 'info');
     } else {
       alert(data.message || 'Failed to cancel RSVP');
@@ -229,7 +218,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Create Event functionality
 document.addEventListener("DOMContentLoaded", () => {
   loadEvents();
   
@@ -239,33 +227,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitEventBtn = document.getElementById("submitEventBtn");
   const formMessage = document.getElementById("formMessage");
   
-  // Show create form
   createEventBtn.addEventListener("click", () => {
     createEventForm.classList.add("active");
     formMessage.innerHTML = "";
   });
   
-  // Hide create form
   cancelEventBtn.addEventListener("click", () => {
     createEventForm.classList.remove("active");
     clearForm();
     formMessage.innerHTML = "";
   });
   
-  // Submit new event
   submitEventBtn.addEventListener("click", async () => {
     const title = document.getElementById("eventTitle").value.trim();
     const event_time = document.getElementById("eventDateTime").value;
     const location = document.getElementById("eventLocation").value.trim();
     const description = document.getElementById("eventDescription").value.trim();
     
-    // Validation
     if (!title || !event_time || !location) {
       showMessage("Please fill in all required fields", "error");
       return;
     }
     
-    // Disable button while submitting
     submitEventBtn.disabled = true;
     submitEventBtn.textContent = "Creating...";
     
@@ -290,7 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage("Event created successfully!", "success");
         clearForm();
         
-        // Reload events after 1 second
         setTimeout(() => {
           createEventForm.classList.remove("active");
           loadEvents();
