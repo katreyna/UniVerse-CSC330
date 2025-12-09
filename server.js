@@ -812,12 +812,12 @@ app.get("/user/:username", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "other-profiles.html"));
 });
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // 404
 app.use((req, res) => {
   res.status(404).send("404 Not Found");
 });
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 /* ======================================================
