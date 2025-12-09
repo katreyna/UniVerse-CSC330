@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "Content-Type": "application/json"
         },
         credentials: "include",
-        body: JSON.stringify({ title, description })
+        body: JSON.stringify({title: title, description: description })
       });
       
       const data = await response.json();

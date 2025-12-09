@@ -80,3 +80,48 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 });
+
+// Password Reset
+document.addEventListener("DOMContentLoaded", () => {
+    const resetButton = document.getElementById("reset");
+
+    if (resetButton) {
+        resetButton.addEventListener("click", () => {
+            const email = document.querySelector('input[name="email"]').value;
+            const newPassword = document.querySelector('input[name="new-password"]').value;
+            const confirmPassword = document.querySelector('input[name="confirm-password"]').value;
+
+            if (!email || !newPassword || !confirmPassword) {
+                alert("You must complete all fields.");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            const data = JSON.stringify({ email, newPassword });
+
+            const xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "/reset-password", true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.withCredentials = true; // Enables cookies
+
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState === 4) {
+                    const result = JSON.parse(xmlhttp.responseText);
+
+                    if (xmlhttp.status === 200 && result.success) {
+                        alert("✅ Password reset successful. You may now log in.");
+                        window.location.href = "/login";
+                    } else {
+                        alert("❌ Password reset failed: " + (result.message || "Unknown error."));
+                    }
+                }
+            };
+
+            xmlhttp.send(data);
+        });
+    }
+});
